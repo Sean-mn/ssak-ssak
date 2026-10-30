@@ -1,8 +1,9 @@
 {
   "name": "ssak-ssak",
-  "description": "Personal Claude Code harness: skills and subagents",
+  "description": "Personal AI Agents harness: skills and subagents",
   "version": "0.1.0",
   "author": {
     "name": "PARK HYEONMIN"
-  }
+  },
+  "agents": "./skills/ssak-issue/agents/"
 }
