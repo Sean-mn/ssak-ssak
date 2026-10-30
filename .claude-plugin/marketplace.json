@@ -1,0 +1,13 @@
+{
+  "name": "ssak-ssak",
+  "owner": {
+    "name": "PARK HYEONMIN"
+  },
+  "plugins": [
+    {
+      "name": "ssak-ssak",
+      "source": "./",
+      "description": "Personal Claude Code harness: skills and subagents"
+    }
+  ]
+}
