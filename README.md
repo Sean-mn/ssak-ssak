@@ -1,4 +1,4 @@
-<div align="center">
+English | [한국어](README.ko.md)
 
 # ssak-ssak
 
@@ -9,7 +9,7 @@ Personal skill harness for Claude Code and Codex: issue work, PR review, open so
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**English** · [한국어](README.ko.md)
+
 
 </div>
 
