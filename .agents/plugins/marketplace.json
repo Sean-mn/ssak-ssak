@@ -1,0 +1,21 @@
+{
+  "name": "ssak-ssak",
+  "interface": {
+    "displayName": "ssak-ssak"
+  },
+  "plugins": [
+    {
+      "name": "ssak-ssak",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Sean-mn/ssak-ssak.git",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
