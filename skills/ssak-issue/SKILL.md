@@ -53,9 +53,10 @@ Paths below are relative to this skill's base directory (shown when the skill lo
    - At most 2 reworks per issue. If the third verification still fails, the issue ends as FAIL.
 5. When every issue is finished:
    1. Compare changed files across the issue branches with `git diff --name-only <base>...<branch>` to find overlaps.
-   2. Report using the "Final report" format in `references/templates.md`.
+   2. Remove the worktrees but keep the branches, which hold the work: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`. Never pass `--force`; a worktree it skips (uncommitted changes) stays and goes in the report.
+   3. Report using the "Final report" format in `references/templates.md`.
 
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
 - The main agent relays the verifier's verdict as is and does not edit issue branches itself.
-- Do not delete worktrees. The report points to `/ssak-clean-up` for that.
+- Remove worktrees only through `cleanup.sh remove --keep-branch` as in step 5, never with `--force`. Never delete issue branches.

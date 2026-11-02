@@ -2,7 +2,9 @@
 # Find and remove what ssak skills leave in this repo: .claude/worktrees/ssak-{issue,review}-<n> worktrees
 # and ssak/{issue,contrib}-<n> branches. Remote branches and PRs are never touched.
 #   cleanup.sh scan                       one line per id: "<id> <SAFE|RISKY> wt=<path|-> branch=<name|-> | <notes>"
-#   cleanup.sh remove [--force] <id>...   re-checks each id; RISKY ids are skipped unless --force
+#   cleanup.sh remove [--force] [--keep-branch] <id>...
+#                                         re-checks each id; RISKY ids are skipped unless --force.
+#                                         --keep-branch removes only the worktree, so only the worktree is checked.
 # SAFE = removing loses nothing: no uncommitted changes and every branch commit is on a remote.
 set -euo pipefail
 
@@ -18,9 +20,9 @@ ids() {
   } | sort -u
 }
 
-# Sets wt, branch, risky, notes for one id
+# Sets wt, branch, risky, notes for one id. With a second arg "wt-only", the branch is ignored.
 check() {
-  local kind=${1%-*} n=${1##*-} out
+  local kind=${1%-*} n=${1##*-} only=${2:-} out
   wt=-; branch=-; risky=0; notes=()
 
   if [ "$kind" != contrib ] && git worktree list --porcelain | grep -qxF "worktree $wtdir/ssak-$kind-$n"; then
@@ -32,7 +34,7 @@ check() {
     fi
   fi
 
-  if [ "$kind" != review ] && git show-ref -q --verify "refs/heads/ssak/$kind-$n"; then
+  if [ "$kind" != review ] && [ "$only" != wt-only ] && git show-ref -q --verify "refs/heads/ssak/$kind-$n"; then
     branch="ssak/$kind-$n"
     local at local_only pr
     at=$(git worktree list --porcelain | awk -v b="branch refs/heads/$branch" '/^worktree /{w=substr($0, 10)} $0==b{print w}')
@@ -60,12 +62,15 @@ case ${1:-} in
     [ "$found" = 1 ] || echo "nothing to clean"
     ;;
   remove)
-    shift; force=0
-    [ "${1:-}" = --force ] && { force=1; shift; }
-    [ $# -gt 0 ] || { echo "usage: $0 remove [--force] <id>..." >&2; exit 2; }
+    shift; force=0; only=
+    while [[ "${1:-}" == --* ]]; do
+      case $1 in --force) force=1 ;; --keep-branch) only=wt-only ;; *) echo "unknown option $1" >&2; exit 2 ;; esac
+      shift
+    done
+    [ $# -gt 0 ] || { echo "usage: $0 remove [--force] [--keep-branch] <id>..." >&2; exit 2; }
     for id in "$@"; do
       [[ "$id" =~ ^(issue|review|contrib)-[1-9][0-9]*$ ]] || { echo "skip $id: not an ssak id"; continue; }
-      check "$id"
+      check "$id" "$only"
       if [ "$wt" = - ] && [ "$branch" = - ]; then echo "skip $id: not found"; continue; fi
       if [ "$risky" = 1 ] && [ "$force" = 0 ]; then line "$id" | sed 's/^/skip (needs --force): /'; continue; fi
       if [ "$wt" != - ]; then
@@ -75,9 +80,9 @@ case ${1:-} in
         # Even --force cannot delete a branch another checkout is on
         git branch -D "$branch" >/dev/null 2>&1 || { echo "kept $branch: still checked out elsewhere; switch away first"; continue; }
       fi
-      echo "removed $id"
+      if [ -n "$only" ]; then echo "removed $id worktree (kept branch)"; else echo "removed $id"; fi
     done
     git worktree prune
     ;;
-  *) echo "usage: $0 scan | remove [--force] <id>..." >&2; exit 2 ;;
+  *) echo "usage: $0 scan | remove [--force] [--keep-branch] <id>..." >&2; exit 2 ;;
 esac

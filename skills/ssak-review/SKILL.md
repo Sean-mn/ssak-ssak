@@ -43,7 +43,14 @@ For `high` and `xhigh`, re-read the code behind every finding before reporting i
 
 Do not report: style preferences no rule file states, problems in code the PR did not touch and does not affect, or speculation without a failure scenario. Lint errors on lines the PR did not change go under "Pre-existing" in the report, not as findings.
 
-## 3. Deliver
+## 3. Clean up
+The review is done with the code on disk, so remove the review worktree before delivering:
+```
+bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>
+```
+Never pass `--force`. If it skips the worktree (e.g. uncommitted changes from installs or test runs), leave it and say why in the report's Worktree line.
+
+## 4. Deliver
 ### Without `--comment`
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
@@ -61,4 +68,4 @@ Report to the user in chat using the "Chat report" format in `references/review-
 ## Rules
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
 - Write GitHub comments in the language of the PR description.
-- Leave the review worktree in place; the report points to `/ssak-clean-up` for that.
+- Remove the review worktree only through `cleanup.sh` as in step 3, never with `--force`.

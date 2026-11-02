@@ -44,8 +44,8 @@ Replace `<...>` with real values. Omit a severity section when it has no finding
 - Team rules checked: <files read, or "none found">
 - Pre-existing: <lint errors on lines the PR did not change, or "none">
 
-### Cleanup
-/ssak-clean-up review-<num> (or git worktree remove <worktree path>)
+### Worktree
+<removed, or kept: reason. Remove it later with /ssak-clean-up review-<num>>
 ```
 
 ## Inline comment
