@@ -30,5 +30,26 @@ jobs:
 
       - name: Shell scripts
         run: |
-          for f in skills/*/scripts/*.sh; do bash -n "$f"; done
-          shellcheck -S warning skills/*/scripts/*.sh
+          for f in skills/*/scripts/*.sh tests/*.sh; do bash -n "$f"; done
+          shellcheck -S warning -x skills/*/scripts/*.sh tests/*.sh
+
+  # Bugs so far were OS-specific: Git Bash on Windows mangles backslashes, macOS ships bash 3.2
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Script tests
+        env:
+          GH_TOKEN: ${{ github.token }}  # the claim regex test runs through gh's jq
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then export PATH="/bin:$PATH"; fi  # use the stock bash 3.2
+          bash --version | head -1
+          bash tests/run.sh
