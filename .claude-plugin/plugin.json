@@ -5,5 +5,8 @@
   "author": {
     "name": "PARK HYEONMIN"
   },
-  "agents": "./skills/ssak-issue/agents/"
+  "agents": [
+    "./skills/ssak-issue/agents/ssak-worker.md",
+    "./skills/ssak-issue/agents/ssak-verifier.md"
+  ]
 }
