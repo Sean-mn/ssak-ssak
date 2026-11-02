@@ -1,7 +1,7 @@
 ---
 name: ssak-review
 description: Review a GitHub pull request, focused on what the PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment" or "review PR 42".
-argument-hint: "[low|middle|high|xhigh] <pr#> [--comment]"
+argument-hint: "[low|middle|high|xhigh] <pr#> [--comment] [--summary]"
 ---
 
 # ssak-review
@@ -17,7 +17,8 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - Effort: `low`, `middle`, `high` or `xhigh`. Default `middle` when omitted.
 - PR number: a positive integer, with an optional leading `#` stripped (`#42` → `42`). Required.
 - `--comment`: post findings as inline PR comments. Without it, nothing is posted to GitHub.
-- Anything else, or a missing PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr#> [--comment]`.
+- `--summary`: with `--comment`, also post the summary review body (verdict, severity counts, checks). Off by default. Without `--comment` it has no effect; say so in the report.
+- Anything else, or a missing PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr#> [--comment] [--summary]`.
 - Check `gh auth status` passes and the current directory is a git repo of the PR's repository. If not, say why and stop.
 
 ## 1. Gather
@@ -56,15 +57,21 @@ Never pass `--force`. If it skips the worktree (e.g. uncommitted changes from in
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
 ### With `--comment`
-1. Build one review from `references/inline-template.md`: an "Inline comment" per finding and the "Review body". A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number. Findings that cannot be placed on a diff line go into the review body.
-2. Write the payload to a temp file and post it as a single review:
+1. Build one review from `references/inline-template.md`: an "Inline comment" per finding. A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number.
+2. The review body follows "Review body" in the template:
+   - With `--summary`: the full summary.
+   - Without it: empty, except findings that cannot be placed on a diff line, which always go in the body.
+3. Write the payload to a temp file and post it as a single review:
    ```
    gh api repos/{owner}/{repo}/pulls/<pr>/reviews -X POST --input <payload.json>
    ```
-   Payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "<summary>", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`
-3. If the API rejects some comment positions (422), move those comments into the body and post again. Never post twice successfully.
-4. If there are no findings, post nothing and tell the user.
-5. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
+   Payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "<body or empty>", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`. Leave `body` out when it is empty.
+4. If the API rejects the payload (422):
+   - Some comment positions are invalid: move those comments into the body and post again.
+   - A body is required: post again with the one-line body from the template.
+   - Never post twice successfully.
+5. If there are no findings: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
+6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
 
 ## Rules
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
