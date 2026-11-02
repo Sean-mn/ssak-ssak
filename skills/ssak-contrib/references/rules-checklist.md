@@ -22,8 +22,9 @@ Fill this from the `guidelines.sh` output and the issue itself. Quote the file a
 Stop and tell the user why, with the evidence line, when any of these hold:
 - The issue is closed.
 - Someone other than the user is assigned.
-- An open or merged PR by someone else references the issue.
-- Someone else commented a claim ("I'll take this", "working on it", "can I work on this") and no maintainer declined it since.
+- A PR by someone else is linked to the issue and is open or merged: by closing keyword (`closes`), by the Development sidebar (`linked`), or pasted in a comment ("PRs linked in comments").
+- An open PR by someone else in the same repo mentions the issue (`mentions`). A mention from another repo, or a closed PR, is only a hint.
+- Someone else's comment appears under "claim comments" and no maintainer declined it since. The claim detector matches phrases like "I'll take this" or "working on it"; read the comments yourself too, since it misses other wording.
 - Labels say it is not ready or not wanted: e.g. `needs triage`, `needs discussion`, `blocked`, `wontfix`, `duplicate`, `invalid`, `question`.
 
 When the evidence is ambiguous (an old claim with no activity for months, an abandoned draft PR), do not decide alone: show it in the pre-flight summary and let the user choose.

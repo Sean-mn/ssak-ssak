@@ -1,7 +1,7 @@
 ---
 name: ssak-contrib
-description: Contribute to someone else's open source repo by issue. Reads the repo's contribution rules (including any AI policy), checks nobody else has the issue, forks and branches, implements, verifies against the repo's rules, then opens a draft PR after the user approves. Use for "/ssak-contrib owner/repo 123" or "contribute to owner/repo issue 123".
-argument-hint: "<owner/repo> <issue#>"
+description: Contribute to someone else's open source repo by issue. Reads the repo's contribution rules (including any AI policy), checks nobody else has the issue, forks and branches, implements, verifies against the repo's rules, then opens a draft PR after the user approves. With --find, lists beginner-friendly issues nobody has taken. Use for "/ssak-contrib owner/repo 123", "/ssak-contrib owner/repo --find" or "contribute to owner/repo issue 123".
+argument-hint: "<owner/repo> <issue#> | <owner/repo> --find"
 ---
 
 # ssak-contrib
@@ -10,7 +10,8 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/guidelines.sh <owner/repo>`: prints the repo's contribution rule files from GitHub, without cloning.
-- `scripts/issue-status.sh <owner/repo> <issue#>`: prints state, assignees, labels, referencing PRs and recent comments.
+- `scripts/issue-status.sh <owner/repo> <issue#>`: prints state, assignees, labels, linked PRs (closing keyword, Development sidebar link, mentions), PRs linked in comments, claim-like comments and the last 10 comments.
+- `../ssak-issue/scripts/find-issues.sh <owner/repo> --beginner`: lists open beginner-labeled issues grouped as FREE, CLAIMED, NOT READY and TAKEN. Both scripts source `../ssak-issue/scripts/common.sh`.
 - `scripts/setup-fork.sh <owner/repo> <issue#> [base-branch]`: forks if needed, clones or reuses a clone, and creates `ssak/contrib-<issue#>`. Prints `fork`, `push-remote`, `base`, `path`, `branch` lines. Exit 3 means the clone has uncommitted changes.
 - `references/rules-checklist.md`: which rules to extract and when to stop.
 - `references/templates.md`: pre-flight summary, verifier brief, PR body, PR draft and final report.
@@ -19,9 +20,15 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../ssak-issue/agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent.
 
 ## 0. Parse arguments
-- Accept `owner/repo 123`, `owner/repo #123`, or an issue URL `https://github.com/owner/repo/issues/123`.
-- Anything else: stop and show the usage `/ssak-contrib <owner/repo> <issue#>`.
+- Accept `owner/repo 123`, `owner/repo #123`, an issue URL `https://github.com/owner/repo/issues/123`, or `owner/repo --find`.
+- Anything else: stop and show the usage `/ssak-contrib <owner/repo> <issue#> | <owner/repo> --find`.
 - Check `gh auth status` passes. If not, say why and stop.
+
+## Find issues (`--find`)
+1. Run `bash <skill dir>/../ssak-issue/scripts/find-issues.sh <owner/repo> --beginner`.
+2. If the repo has no beginner labels or nothing is FREE, say so and offer to search all open issues by running it without `--beginner`.
+3. Show the FREE issues, then CLAIMED with the claim line. Summarize NOT READY and TAKEN in one line each.
+4. Ask the user to pick one issue, then continue at step 1 with it. The full check in step 1 still runs, because find does not read PR links pasted in comments.
 
 ## 1. Rules and issue status (read only)
 1. Run `guidelines.sh <owner/repo>` and `issue-status.sh <owner/repo> <issue#>`. Read the issue body with `gh issue view <issue#> -R <owner/repo>`.
