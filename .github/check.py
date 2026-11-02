@@ -69,6 +69,12 @@ for doc in sorted(root.glob("skills/*/**/*.md")):
         if not (skill_dir / ref).is_file():
             errors.append(f"{rel(doc)}: points at missing file {ref}")
 
+# Files scripts run or source next to themselves ("$(dirname "$0")/common.sh") must exist, relative to the script
+for script in sorted(root.glob("skills/*/scripts/*.sh")):
+    for ref in sorted(set(re.findall(r'\$\(dirname "\$0"\)/([\w./-]*\w)', script.read_text(encoding="utf-8")))):
+        if not (script.parent / ref).is_file():
+            errors.append(f"{rel(script)}: points at missing file {ref}")
+
 
 # Installed plugins only update when the version goes up, so plugin changes need a bump
 def git(*args):
