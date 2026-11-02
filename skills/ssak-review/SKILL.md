@@ -10,7 +10,8 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
-- `references/review-template.md`: the severity-ordered report and the inline comment format.
+- `references/review-template.md`: severity levels and the chat report shown to the user.
+- `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
 
 ## 0. Parse arguments
 - Effort: `low`, `middle`, `high` or `xhigh`. Default `middle` when omitted.
@@ -55,7 +56,7 @@ Never pass `--force`. If it skips the worktree (e.g. uncommitted changes from in
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
 ### With `--comment`
-1. Build one review with the "Inline comment" format from the template. A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number. Findings that cannot be placed on a diff line go into the review body.
+1. Build one review from `references/inline-template.md`: an "Inline comment" per finding and the "Review body". A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number. Findings that cannot be placed on a diff line go into the review body.
 2. Write the payload to a temp file and post it as a single review:
    ```
    gh api repos/{owner}/{repo}/pulls/<pr>/reviews -X POST --input <payload.json>
@@ -67,5 +68,5 @@ Report to the user in chat using the "Chat report" format in `references/review-
 
 ## Rules
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
-- Write GitHub comments in the language of the PR description.
+- Write GitHub comments in the language of the PR description, in the tone `references/inline-template.md` sets.
 - Remove the review worktree only through `cleanup.sh` as in step 3, never with `--force`.
