@@ -1,7 +1,7 @@
 ---
 name: ssak-review
 description: Review a GitHub pull request, focused on what the PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment" or "review PR 42".
-argument-hint: "[low|middle|high|xhigh] <pr-num> [--comment]"
+argument-hint: "[low|middle|high|xhigh] <pr#> [--comment]"
 ---
 
 # ssak-review
@@ -9,14 +9,14 @@ argument-hint: "[low|middle|high|xhigh] <pr-num> [--comment]"
 Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
-- `scripts/pr-worktree.sh <pr-num>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
+- `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
 - `references/review-template.md`: the severity-ordered report and the inline comment format.
 
 ## 0. Parse arguments
 - Effort: `low`, `middle`, `high` or `xhigh`. Default `middle` when omitted.
-- PR number: a positive integer. Required.
+- PR number: a positive integer, with an optional leading `#` stripped (`#42` → `42`). Required.
 - `--comment`: post findings as inline PR comments. Without it, nothing is posted to GitHub.
-- Anything else, or a missing PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr-num> [--comment]`.
+- Anything else, or a missing PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr#> [--comment]`.
 - Check `gh auth status` passes and the current directory is a git repo of the PR's repository. If not, say why and stop.
 
 ## 1. Gather

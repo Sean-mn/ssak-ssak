@@ -4,7 +4,7 @@
 set -euo pipefail
 
 n=${1:-}
-[[ "$n" =~ ^[1-9][0-9]*$ ]] || { echo "usage: $0 <pr-num>" >&2; exit 2; }
+[[ "$n" =~ ^[1-9][0-9]*$ ]] || { echo "usage: $0 <pr#>" >&2; exit 2; }
 
 root=$(git rev-parse --show-toplevel)
 path="$root/.claude/worktrees/ssak-review-$n"

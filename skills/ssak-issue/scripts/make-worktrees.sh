@@ -3,7 +3,7 @@
 # Output: first line "base <ref>", then one "issue <n> <branch> <path>" line per issue
 set -euo pipefail
 
-[ $# -gt 0 ] || { echo "usage: $0 <issue-num>..." >&2; exit 2; }
+[ $# -gt 0 ] || { echo "usage: $0 <issue#>..." >&2; exit 2; }
 for n in "$@"; do
   [[ "$n" =~ ^[1-9][0-9]*$ ]] || { echo "invalid issue number: $n" >&2; exit 2; }
 done

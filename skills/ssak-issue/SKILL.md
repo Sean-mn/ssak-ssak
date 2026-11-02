@@ -1,7 +1,7 @@
 ---
 name: ssak-issue
 description: Work on GitHub issues by number. One issue is handled directly by the main agent; two or more run in parallel, each in its own git worktree with a worker agent, then a verifier agent checks the result and the main agent reports. Use for "/ssak-issue 12 15" or "work on issues 12 and 15".
-argument-hint: <issue-num> [issue-num...]
+argument-hint: "<issue#> [issue#...]"
 ---
 
 # ssak-issue
@@ -21,7 +21,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - Otherwise, read `agents/ssak-worker.md` and `agents/ssak-verifier.md` and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
 
 ## 0. Prepare
-1. Check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue-num> [issue-num...]`). Drop duplicate numbers.
+1. Strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...]`). Drop duplicate numbers.
 2. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 
 ## One issue: the main agent works directly
