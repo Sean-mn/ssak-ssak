@@ -1,7 +1,7 @@
 ---
 name: ssak-review
 description: Review a GitHub pull request, focused on what the PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment" or "review PR 42".
-argument-hint: [low|middle|high|xhigh] <pr-num> [--comment]
+argument-hint: "[low|middle|high|xhigh] <pr-num> [--comment]"
 ---
 
 # ssak-review
