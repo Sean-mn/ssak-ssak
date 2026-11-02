@@ -1,4 +1,4 @@
-<div align="center">
+[English](README.md) | 한국어
 
 # ssak-ssak
 
@@ -9,7 +9,7 @@ Claude Code와 Codex용 개인 스킬 하네스: 이슈 작업, PR 리뷰, 오�
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[English](README.md) · **한국어**
+
 
 </div>
 
