@@ -61,4 +61,4 @@ Report to the user in chat using the "Chat report" format in `references/review-
 ## Rules
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
 - Write GitHub comments in the language of the PR description.
-- Leave the review worktree in place; the report ends with its cleanup command.
+- Leave the review worktree in place; the report points to `/ssak-clean-up` for that.

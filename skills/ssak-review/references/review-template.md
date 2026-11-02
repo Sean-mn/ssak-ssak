@@ -45,7 +45,7 @@ Replace `<...>` with real values. Omit a severity section when it has no finding
 - Pre-existing: <lint errors on lines the PR did not change, or "none">
 
 ### Cleanup
-git worktree remove <worktree path>
+/ssak-clean-up review-<num> (or git worktree remove <worktree path>)
 ```
 
 ## Inline comment

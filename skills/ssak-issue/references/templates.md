@@ -41,6 +41,6 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 
 ### Next steps
 - push and PR: git push -u origin <branch> && gh pr create --base <base branch name> --head <branch> --fill
-- clean up worktree: git worktree remove <worktree path>
+- clean up: /ssak-clean-up (or git worktree remove <worktree path>)
 ```
 When the main agent handled a single issue directly, report one row without the Reworks column and omit the worktree cleanup line.

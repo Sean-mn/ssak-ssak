@@ -58,4 +58,4 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
 - The main agent relays the verifier's verdict as is and does not edit issue branches itself.
-- Do not delete worktrees. Only print the cleanup command in the report.
+- Do not delete worktrees. The report points to `/ssak-clean-up` for that.
