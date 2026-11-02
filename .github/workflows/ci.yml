@@ -14,12 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the version bump check diffs against the base commit
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Manifests and skill frontmatter
+      - name: Manifests, skill frontmatter and version bump
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           pip install --quiet pyyaml
           python .github/check.py
