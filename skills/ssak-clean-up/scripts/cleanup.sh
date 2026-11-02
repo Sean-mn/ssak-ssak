@@ -64,7 +64,7 @@ case ${1:-} in
   remove)
     shift; force=0; only=
     while [[ "${1:-}" == --* ]]; do
-      case $1 in --force) force=1 ;; --keep-branch) only=wt-only ;; *) echo "unknown option $1" >&2; exit 2 ;; esac
+      case $1 in --force) force=1 ;; --keep-branch) only="wt-only" ;; *) echo "unknown option $1" >&2; exit 2 ;; esac
       shift
     done
     [ $# -gt 0 ] || { echo "usage: $0 remove [--force] [--keep-branch] <id>..." >&2; exit 2; }
