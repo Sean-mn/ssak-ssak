@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: no-local-test-failure
+description: A local test failure is not a PR's CI failure, so no ssak skill
+execution:
+  prompt: 로컬에서 npm test가 실패하는데 왜 그런지 봐줘.
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - name: no-ssak-skill
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-'
+    min: 0
+    max: 0
+    arm: both

@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: contrib-find
+description: Beginner issues in someone else's repo belong to ssak-contrib, not ssak-issue --find
+execution:
+  prompt: Find me a good first issue in astral-sh/uv that nobody has taken yet.
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - name: fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-contrib"'

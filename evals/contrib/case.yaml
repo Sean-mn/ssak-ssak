@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: contrib
+execution:
+  prompt: I want to contribute to cli/cli by fixing issue 9876.
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - name: fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-contrib"'
