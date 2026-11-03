@@ -9,10 +9,6 @@ Claude Code와 Codex용 개인 스킬 하네스: 이슈 작업, PR 리뷰, 오�
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-
-
-</div>
-
 ## 빠른 시작
 
 `git`, `bash`(Windows는 Git Bash), `gh auth login`으로 로그인한 [GitHub CLI](https://cli.github.com/)가 필요해요.

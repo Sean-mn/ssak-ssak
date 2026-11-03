@@ -1,4 +1,5 @@
 <!-- Title: "<type>: <what changed>", type is feat, fix, docs, ci, test, refactor or chore.
+     A release PR is titled "release vX.Y.Z: <highlights>", all lowercase.
      It becomes the commit subject on squash merge, and release notes group commits by that type. -->
 
 ## Summary
@@ -14,5 +15,5 @@
 - 
 
 ## Checklist
-- [ ] Version left alone: a separate `chore: release X.Y.Z` PR bumps it in both manifests and publishes a release
+- [ ] Version left alone: a separate `release vX.Y.Z: <highlights>` PR bumps it in both manifests and publishes a release
 - [ ] New or changed command: skills table updated in both README.md and README.ko.md
