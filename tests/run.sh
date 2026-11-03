@@ -16,8 +16,8 @@ trap 'rm -rf "$tmp"' EXIT
 # Isolate from the user's git config (signing, hooks, default branch)
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL="$tmp/gitconfig"
 printf '[user]\n\tname = t\n\temail = t@t\n[init]\n\tdefaultBranch = main\n' > "$GIT_CONFIG_GLOBAL"
-# cleanup.sh asks gh for PRs; a failing stub keeps it offline
-mkdir "$tmp/bin" && printf '#!/bin/sh\nexit 1\n' > "$tmp/bin/gh" && chmod +x "$tmp/bin/gh"
+# gh stub keeps tests offline: pr-worktree.sh gets the local origin as the PR's repo, cleanup.sh's PR lookup fails
+mkdir "$tmp/bin" && printf '#!/bin/sh\n[ "$1 $2" = "repo view" ] && echo "%s" && exit 0\nexit 1\n' "$tmp/origin.git" > "$tmp/bin/gh" && chmod +x "$tmp/bin/gh"
 offline() { PATH="$tmp/bin:$PATH" "$@"; }
 
 # Regex characters and non-ASCII in the path: cleanup.sh once broke on "(x86)"
@@ -44,9 +44,21 @@ check "main checkout clean" "" "$(git status --porcelain)"
 bash "$skills/ssak-issue/scripts/make-worktrees.sh" abc >/dev/null 2>&1
 check "rejects non-number" "2" "$?"
 
+echo "# pr-worktree.sh"
+review="$skills/ssak-review/scripts/pr-worktree.sh"
+pr=$(git commit-tree -m pr "HEAD^{tree}")
+git push -q origin "$pr:refs/pull/7/head" 2>/dev/null
+check "checks out PR head" "$pr $wt/ssak-review-7" "$(offline bash "$review" 7 2>&1)"
+pr=$(git commit-tree -p "$pr" -m pr2 "HEAD^{tree}")
+git push -q origin "$pr:refs/pull/7/head" 2>/dev/null
+offline bash "$review" 7 >/dev/null 2>&1
+check "rerun moves to new head" "$pr" "$(git -C "$wt/ssak-review-7" rev-parse HEAD)"
+check "main checkout still clean" "" "$(git status --porcelain)"
+offline bash "$review" abc >/dev/null 2>&1
+check "rejects non-number" "2" "$?"
+
 echo "# cleanup.sh"
 cleanup="$skills/ssak-clean-up/scripts/cleanup.sh"
-git worktree add -q --detach "$wt/ssak-review-7" HEAD
 check "scan" "issue-2 SAFE wt=$wt/ssak-issue-2 branch=ssak/issue-2 | nothing to lose
 issue-3 SAFE wt=$wt/ssak-issue-3 branch=ssak/issue-3 | nothing to lose
 review-7 SAFE wt=$wt/ssak-review-7 branch=- | nothing to lose" "$(offline bash "$cleanup" scan)"
