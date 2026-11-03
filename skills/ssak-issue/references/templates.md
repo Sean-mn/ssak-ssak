@@ -11,6 +11,15 @@ Work on issue #<num>.
 Implement it, commit, then answer in your defined report format.
 ```
 
+## Coupled worker brief (ssak-worker)
+```
+Work on coupled issues #<num>, #<num>... in this order. <why they are coupled, one line>
+- #<num>: worktree <worktree path>, branch <branch>, base <base>
+- #<num>: worktree <worktree path>, branch <branch>, base <base or "stacked on <earlier branch>">
+For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier branch> after the earlier issue is committed.
+Do each issue only in its own worktree, commit it there, then answer with one report per issue in your defined format.
+```
+
 ## Verifier brief (ssak-verifier)
 ```
 Verify issue #<num>.
@@ -38,6 +47,7 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 ### Needs attention
 - #<num>: <FAIL reason, BLOCKED reason, verifier NOTE, "suspected pre-existing failure" items>
 - Overlapping files: <files changed by more than one issue branch; may conflict on merge. "none" if none>
+- Stacked: <#<num> on #<num>: merge the earlier one first, or open its PR with --base <earlier branch>. "none" if none>
 
 ### Next steps
 - push and PR: git push -u origin <branch> && gh pr create --base <base branch name> --head <branch> --fill

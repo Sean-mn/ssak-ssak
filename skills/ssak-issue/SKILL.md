@@ -51,16 +51,18 @@ Name each issue's branch by the repo's own convention:
 8. Report using the final report format in `references/templates.md`.
 
 ## Two or more issues: work, verify, report
-1. Pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
-2. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per issue, all in parallel. Use the "Worker brief" from `references/templates.md`. The script already created the worktrees, so do not use the subagent tool's workspace isolation option.
-3. Handle each issue independently; never wait on another issue.
+1. Read every issue with `gh issue view <num> --comments` and group coupled issues: one needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Tell the user the coupled groups in one line before starting.
+2. Pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
+3. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order. The script already created the worktrees, so do not use the subagent tool's workspace isolation option.
+   - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
+4. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
    - If the worker reports `DONE`, launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief".
-4. If verification returns `FAIL`, request a rework.
+5. If verification returns `FAIL`, request a rework.
    - Send the "Rework request" to the same worker with a message tool (`SendMessage` / `send_message`). If unavailable, start a new worker and include the previous worker's report.
    - After the rework, verify again with a fresh verifier so it is not anchored on the earlier verdict.
    - At most 2 reworks per issue. If the third verification still fails, the issue ends as FAIL.
-5. When every issue is finished:
+6. When every issue is finished:
    1. Compare changed files across the issue branches with `git diff --name-only <base>...<branch>` to find overlaps.
    2. Remove the worktrees but keep the branches, which hold the work: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`. Never pass `--force`; a worktree it skips (uncommitted changes) stays and goes in the report.
    3. Report using the "Final report" format in `references/templates.md`.
