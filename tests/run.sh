@@ -77,6 +77,22 @@ check "local develop" "develop" "$(bash "$skills/ssak-issue/scripts/base-branch.
 git push -q origin develop 2>/dev/null
 check "remote develop first" "origin/develop" "$(bash "$skills/ssak-issue/scripts/base-branch.sh")"
 
+echo "# release-notes.sh"
+notes="$skills/../.github/release-notes.sh"
+git tag v0.0.1
+for m in "feat(x): add a" "fix: b" "docs: c"; do git commit -q --allow-empty -m "$m"; done
+out=$(bash "$notes" v0.0.2)
+check "grouped by type" "### Features
+- add a
+### Fixes
+- b
+### Other
+- docs: c" "$(awk '/^## Update/ { exit } /^(###|-) /' <<<"$out" | sed -E 's/ \([0-9a-f]+\)$//')"
+check "compare link" "**Full Changelog**: https://github.com/Sean-mn/ssak-ssak/compare/v0.0.1...v0.0.2" "$(grep 'Full Changelog' <<<"$out")"
+git tag -d v0.0.1 >/dev/null
+check "first release link" "**Full Changelog**: https://github.com/Sean-mn/ssak-ssak/commits/v0.0.2" \
+  "$(bash "$notes" v0.0.2 | grep 'Full Changelog')"
+
 echo "# claim regex (gh jq)"
 if gh auth status >/dev/null 2>&1; then
   # shellcheck source=skills/ssak-issue/scripts/common.sh

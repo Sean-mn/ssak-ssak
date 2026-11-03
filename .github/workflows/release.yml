@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # release notes list the commits since the previous tag
 
       - name: Tag and release a new plugin version
         env:
@@ -20,4 +22,5 @@ jobs:
         run: |
           v="v$(jq -r .version .claude-plugin/plugin.json)"
           if gh release view "$v" >/dev/null 2>&1; then echo "$v already released"; exit 0; fi
-          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --generate-notes
+          bash .github/release-notes.sh "$v" > "$RUNNER_TEMP/notes.md"
+          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --notes-file "$RUNNER_TEMP/notes.md"
