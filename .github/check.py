@@ -1,10 +1,7 @@
-"""Static checks for the ssak-ssak plugin. Run from the repo root: python .github/check.py (needs PyYAML).
-Set BASE_SHA (e.g. BASE_SHA=origin/main) to also require a version bump when plugin files changed since that commit."""
+"""Static checks for the ssak-ssak plugin. Run from the repo root: python .github/check.py (needs PyYAML)."""
 import json
-import os
 import pathlib
 import re
-import subprocess
 import sys
 
 import yaml
@@ -74,34 +71,6 @@ for script in sorted(root.glob("skills/*/scripts/*.sh")):
     for ref in sorted(set(re.findall(r'\$\(dirname "\$0"\)/([\w./-]*\w)', script.read_text(encoding="utf-8")))):
         if not (script.parent / ref).is_file():
             errors.append(f"{rel(script)}: points at missing file {ref}")
-
-
-# Installed plugins only update when the version goes up, so plugin changes need a bump
-def git(*args):
-    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
-
-
-def version_key(v):
-    try:
-        return tuple(int(x) for x in str(v).split("."))
-    except ValueError:
-        return None
-
-
-base = os.environ.get("BASE_SHA", "").strip()
-if base and set(base) != {"0"} and git("cat-file", "-e", f"{base}^{{commit}}").returncode == 0:
-    changed = git("diff", "--name-only", base, "HEAD", "--").stdout.split()
-    plugin_files = [f for f in changed if f.startswith(("skills/", ".claude-plugin/", ".codex-plugin/", ".agents/"))]
-    old = git("show", f"{base}:.claude-plugin/plugin.json")
-    if plugin_files and old.returncode == 0:
-        old_version = json.loads(old.stdout).get("version")
-        new_version = claude.get("version")
-        old_key, new_key = version_key(old_version), version_key(new_version)
-        if old_key is None or new_key is None or new_key <= old_key:
-            errors.append(f"version not bumped: plugin files changed since {base[:12]} ({', '.join(plugin_files[:5])}"
-                          f"{', ...' if len(plugin_files) > 5 else ''}) but version is {new_version} (was {old_version})")
-elif base and set(base) != {"0"}:  # all zeros = first push of a branch, nothing to compare
-    print(f"note: base {base[:12]} not available, skipped the version bump check")
 
 print("\n".join(errors) or f"ok: {len(manifests)} manifests, {len(list(root.glob('skills/*/SKILL.md')))} skills")
 sys.exit(1 if errors else 0)

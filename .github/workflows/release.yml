@@ -1,6 +1,7 @@
 name: Release
 
-# CI makes plugin changes bump the version, so a version not yet released on main is a new release
+# Release by merging a "chore: release X.Y.Z" PR that bumps the version in .claude-plugin/plugin.json
+# and .codex-plugin/plugin.json. Other PRs leave the version alone, so they never conflict on it.
 on:
   push:
     branches: [main]
