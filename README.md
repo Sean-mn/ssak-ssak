@@ -42,6 +42,7 @@ Update with `codex plugin marketplace upgrade`.
 | `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues. Two or more run in parallel worktrees, each checked by a verifier agent. |
 | `/ssak-issue --find` | Lists open issues nobody has taken yet. |
 | `/ssak-review [low\|middle\|high\|xhigh] <pr#> [--comment] [--summary]` | Reviews a PR for production impact, lint and team rules. `--comment` posts inline comments. |
+| `/ssak-ci-doctor [owner/repo] <pr#>` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Read-only. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |
 | `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
 | `/ssak-clean-up [id...]` | Removes worktrees and branches the skills left behind. Asks first. |

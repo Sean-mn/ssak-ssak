@@ -1,0 +1,26 @@
+name: Release
+
+# CI makes plugin changes bump the version, so a version not yet released on main is a new release
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # release notes list the commits since the previous tag
+
+      - name: Tag and release a new plugin version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="v$(jq -r .version .claude-plugin/plugin.json)"
+          if gh release view "$v" >/dev/null 2>&1; then echo "$v already released"; exit 0; fi
+          bash .github/release-notes.sh "$v" > "$RUNNER_TEMP/notes.md"
+          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --notes-file "$RUNNER_TEMP/notes.md"

@@ -1,18 +1,18 @@
 {
   "name": "ssak-ssak",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Personal AI Agents harness: skills and subagents",
   "author": {
     "name": "PARK HYEONMIN"
   },
   "homepage": "https://github.com/Sean-mn/ssak-ssak",
   "repository": "https://github.com/Sean-mn/ssak-ssak",
-  "keywords": ["github", "issues", "code-review", "open-source", "worktree"],
+  "keywords": ["github", "issues", "code-review", "ci", "open-source", "worktree"],
   "skills": "./skills/",
   "interface": {
     "displayName": "ssak-ssak",
-    "shortDescription": "Issue work, PR review, open source contributions",
-    "longDescription": "Personal harness skills: work on GitHub issues in parallel worktrees with a verifier, review PRs by effort level, contribute to open source repos following their rules, and clean up what these skills leave behind.",
+    "shortDescription": "Issue work, PR review, CI failures, open source contributions",
+    "longDescription": "Personal harness skills: work on GitHub issues in parallel worktrees with a verifier, review PRs by effort level, find why CI failed on a PR, contribute to open source repos following their rules, and clean up what these skills leave behind.",
     "developerName": "PARK HYEONMIN",
     "category": "Productivity",
     "capabilities": ["Interactive", "Read", "Write"],
