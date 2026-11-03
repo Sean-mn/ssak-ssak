@@ -83,6 +83,16 @@ check "force removes" "removed issue-3" "$(offline bash "$cleanup" remove --forc
 check "nothing left" "nothing to clean" "$(offline bash "$cleanup" scan)"
 check "ignores non-ssak ids" "skip main: not an ssak id" "$(offline bash "$cleanup" remove main)"
 
+echo "# make-worktrees.sh, project branch names"
+out=$(bash "$skills/ssak-issue/scripts/make-worktrees.sh" 4:feat/4-x 2>&1)
+check "named branch" "base origin/main
+issue 4 feat/4-x $wt/ssak-issue-4" "$out"
+check "rerun reports the worktree's branch" "$out" "$(bash "$skills/ssak-issue/scripts/make-worktrees.sh" 4 2>&1)"
+bash "$skills/ssak-issue/scripts/make-worktrees.sh" 5:bad..name >/dev/null 2>&1
+check "rejects bad branch name" "2" "$?"
+check "keep-branch keeps named branch" "removed issue-4 worktree (kept branch)
+feat/4-x" "$(offline bash "$cleanup" remove --keep-branch issue-4; git branch --list --format='%(refname:short)' feat/4-x)"
+
 echo "# base-branch.sh, develop-like"
 git branch -q develop
 check "local develop" "develop" "$(bash "$skills/ssak-issue/scripts/base-branch.sh")"
