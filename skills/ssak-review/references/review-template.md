@@ -47,3 +47,25 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 ### Worktree
 <removed, or kept: reason. Remove it later with /ssak-clean-up review-<num>>
 ```
+
+## Reviewer brief (ssak-reviewer, two or more PRs)
+```
+Review PR #<num> at effort <level>.
+- worktree: <worktree path> at head <head sha>  (already checked out; do all reads and commands inside it)
+- skill dir: <ssak-review skill dir>
+- report language: <the user's language>
+- inline comments: <yes / no>
+Answer in your defined report format.
+```
+
+## Multi-PR report
+Shown first when two or more PRs were reviewed, followed by each PR's "Chat report" in PR number order. Leave out the Posted column without `--comment`.
+```
+## ssak-review: <n> PRs · effort: <level>
+
+| PR | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
+|---|---|---|---|---|---|---|
+| #<num> <title> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
+
+<Not reviewed: #<num>: <reason>. Omit when every PR was reviewed.>
+```
