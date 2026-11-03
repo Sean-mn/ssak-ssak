@@ -9,8 +9,8 @@ argument-hint: "<issue#> [issue#...] | --find"
 Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
-- `agents/ssak-worker.md`: worker subagent instructions.
-- `agents/ssak-verifier.md`: verifier subagent instructions.
+- `../../agents/ssak-worker.md`: worker subagent instructions.
+- `../../agents/ssak-verifier.md`: verifier subagent instructions.
 - `scripts/base-branch.sh`: prints the ref to branch from. A develop-like branch if one exists, otherwise the default branch (main).
 - `scripts/make-worktrees.sh <num...>`: creates a `ssak/issue-<num>` branch and worktree per issue.
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
@@ -18,9 +18,9 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: agent briefs and the final report format.
 
 ## Subagents
-`agents/ssak-worker.md` and `agents/ssak-verifier.md` define the two subagents used when working on multiple issues:
+`../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` define the two subagents used when working on multiple issues:
 - If `ssak-worker` / `ssak-verifier` (or `ssak-ssak:ssak-worker` / `ssak-ssak:ssak-verifier`) are already registered in the harness, invoke them by name.
-- Otherwise, read `agents/ssak-worker.md` and `agents/ssak-verifier.md` and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
+- Otherwise, read `../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
 
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
@@ -43,10 +43,10 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 
 ## Two or more issues: work, verify, report
 1. Run `bash <skill dir>/scripts/make-worktrees.sh <num...>`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
-2. Launch one `ssak-worker` subagent (`agents/ssak-worker.md`) per issue, all in parallel. Use the "Worker brief" from `references/templates.md`. The script already created the worktrees, so do not use the subagent tool's workspace isolation option.
+2. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per issue, all in parallel. Use the "Worker brief" from `references/templates.md`. The script already created the worktrees, so do not use the subagent tool's workspace isolation option.
 3. Handle each issue independently; never wait on another issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
-   - If the worker reports `DONE`, launch `ssak-verifier` (`agents/ssak-verifier.md`) with the "Verifier brief".
+   - If the worker reports `DONE`, launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief".
 4. If verification returns `FAIL`, request a rework.
    - Send the "Rework request" to the same worker with a message tool (`SendMessage` / `send_message`). If unavailable, start a new worker and include the previous worker's report.
    - After the rework, verify again with a fresh verifier so it is not anchored on the earlier verdict.
