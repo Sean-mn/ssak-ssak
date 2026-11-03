@@ -1,6 +1,6 @@
 name: Release
 
-# Release by merging a "chore: release X.Y.Z" PR that bumps the version in .claude-plugin/plugin.json
+# Release by merging a "release vX.Y.Z: <highlights>" PR (all lowercase) that bumps the version in .claude-plugin/plugin.json
 # and .codex-plugin/plugin.json. Other PRs leave the version alone, so they never conflict on it.
 on:
   push:
