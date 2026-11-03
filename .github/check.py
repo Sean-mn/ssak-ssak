@@ -47,22 +47,19 @@ codex = manifests.get(".codex-plugin/plugin.json", {})
 if claude.get("version") != codex.get("version"):
     errors.append(f"version mismatch: .claude-plugin {claude.get('version')} vs .codex-plugin {codex.get('version')}")
 
-for agent in claude.get("agents", []):
-    path = root / agent
-    if not path.is_file():
-        errors.append(f".claude-plugin/plugin.json: agent file missing: {agent}")
-    else:
-        frontmatter(path)
+# Claude Code picks up agents/*.md at the plugin root on its own
+for agent in sorted(root.glob("agents/*.md")):
+    frontmatter(agent)
 
 for skill in sorted(root.glob("skills/*/SKILL.md")):
     data = frontmatter(skill)
     if data.get("name") not in (None, skill.parent.name):
         errors.append(f"{rel(skill)}: name '{data['name']}' does not match folder '{skill.parent.name}'")
 
-# Files skill docs point at (scripts/x.sh, ../ssak-issue/references/y.md) must exist, relative to the skill folder
+# Files skill docs point at (scripts/x.sh, ../ssak-issue/references/y.md, ../../agents/z.md) must exist, relative to the skill folder
 for doc in sorted(root.glob("skills/*/**/*.md")):
     skill_dir = root / "skills" / doc.relative_to(root / "skills").parts[0]
-    for ref in sorted(set(re.findall(r"(?:\.\./[\w-]+/)?(?:scripts|references|agents)/[\w.-]*\w", doc.read_text(encoding="utf-8")))):
+    for ref in sorted(set(re.findall(r"(?:\.\./\.\./|\.\./[\w-]+/)?(?:scripts|references|agents)/[\w.-]*\w", doc.read_text(encoding="utf-8")))):
         if not (skill_dir / ref).is_file():
             errors.append(f"{rel(doc)}: points at missing file {ref}")
 

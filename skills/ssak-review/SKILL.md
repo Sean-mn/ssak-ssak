@@ -12,6 +12,10 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
 - `references/review-template.md`: severity levels and the chat report shown to the user.
 - `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
+- `../../agents/ssak-refuter.md`: refuter subagent instructions, used at `xhigh`.
+
+## Subagent
+At `xhigh`, findings are checked by the `ssak-refuter` subagent (`ssak-ssak:ssak-refuter` when installed as a plugin). If it is not registered, read `../../agents/ssak-refuter.md` and pass its instructions with the brief to a general-purpose subagent.
 
 ## 0. Parse arguments
 - Effort: `low`, `middle`, `high` or `xhigh`. Default `middle` when omitted.
@@ -41,7 +45,7 @@ At every level, look in this order:
 2. **Correctness of the change**: does the code do what the PR says, edge cases, regressions in touched behavior.
 3. **Lint and team rules**: lint errors on changed lines, violations of the rule files from step 1.4.
 
-For `high` and `xhigh`, re-read the code behind every finding before reporting it and drop any you cannot back with a concrete scenario. For `xhigh`, give each Critical or High finding to a fresh subagent with only the finding and the worktree path and ask it to disprove the finding; drop the finding if it can.
+For `high` and `xhigh`, re-read the code behind every finding before reporting it and drop any you cannot back with a concrete scenario. For `xhigh`, launch one fresh `ssak-refuter` per Critical or High finding, in parallel, with only the finding (file:line, claim, failure scenario) and the worktree path; drop the finding if it returns `DISPROVED`.
 
 Do not report: style preferences no rule file states, problems in code the PR did not touch and does not affect, or speculation without a failure scenario. Lint errors on lines the PR did not change go under "Pre-existing" in the report, not as findings.
 

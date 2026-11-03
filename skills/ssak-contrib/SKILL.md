@@ -17,7 +17,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: pre-flight summary, verifier brief, PR body, PR draft and final report.
 
 ## Subagent
-Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../ssak-issue/agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent.
+Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../../agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent.
 
 ## 0. Parse arguments
 - Accept `owner/repo 123`, `owner/repo #123`, an issue URL `https://github.com/owner/repo/issues/123`, or `owner/repo --find`.
