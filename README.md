@@ -39,7 +39,7 @@ Update with `codex plugin marketplace upgrade`.
 
 | Command | What it does |
 |---|---|
-| `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues. Two or more run in parallel worktrees, each checked by a verifier agent. |
+| `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues, each checked by a verifier agent. Two or more run in parallel worktrees. |
 | `/ssak-issue --find` | Lists open issues nobody has taken yet. |
 | `/ssak-review [low\|middle\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | Reviews PRs for production impact, lint and team rules. Two or more are reviewed in parallel, one reviewer agent per PR. `--comment` posts inline comments. |
 | `/ssak-ci-doctor [owner/repo] <pr#>` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Read-only. |

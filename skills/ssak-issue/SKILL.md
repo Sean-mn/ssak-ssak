@@ -1,6 +1,6 @@
 ---
 name: ssak-issue
-description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each, then a verifier agent checks the result and the main agent reports. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue --find" or "work on issues 12 and 15".
+description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue --find" or "work on issues 12 and 15".
 argument-hint: "<issue#> [issue#...] | --find"
 ---
 
@@ -18,7 +18,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: agent briefs and the final report format.
 
 ## Subagents
-`../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` define the two subagents used when working on multiple issues:
+`../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` define the two subagents: the worker for two or more issues, the verifier for every issue:
 - If `ssak-worker` / `ssak-verifier` (or `ssak-ssak:ssak-worker` / `ssak-ssak:ssak-verifier`) are already registered in the harness, invoke them by name.
 - Otherwise, read `../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
 
@@ -46,8 +46,9 @@ Name each issue's branch by the repo's own convention:
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
 5. Commit as `<type>: <summary> (#<num>)`.
-6. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
-7. Report using the final report format in `references/templates.md`.
+6. Launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief", giving your own summary and test results as the worker report. On `FAIL`, fix the reasons with new commits (no amend) and verify again with a fresh verifier. At most 2 reworks; if the third verification still fails, the issue ends as FAIL.
+7. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
+8. Report using the final report format in `references/templates.md`.
 
 ## Two or more issues: work, verify, report
 1. Pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
@@ -66,5 +67,5 @@ Name each issue's branch by the repo's own convention:
 
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
-- The main agent relays the verifier's verdict as is and does not edit issue branches itself.
+- The main agent relays the verifier's verdict as is. With two or more issues it does not edit issue branches itself.
 - Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.

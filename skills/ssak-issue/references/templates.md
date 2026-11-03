@@ -44,4 +44,3 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 - worktrees: <removed, branches kept / kept: <ids and why>>
 - delete the branches once pushed or merged: /ssak-clean-up for `ssak/*` branches, `git branch -d <branch>` for others
 ```
-When the main agent handled a single issue directly, report one row without the Reworks column.
