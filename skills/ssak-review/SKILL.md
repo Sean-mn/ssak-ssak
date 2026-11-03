@@ -1,7 +1,7 @@
 ---
 name: ssak-review
-description: Review a GitHub pull request, focused on what the PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment" or "review PR 42".
-argument-hint: "[low|middle|high|xhigh] <pr#> [--comment] [--summary]"
+description: Review one or more GitHub pull requests, focused on what each PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Two or more PRs are reviewed in parallel, one reviewer agent per PR, and reported together. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment", "/ssak-review 42 43" or "review PR 42".
+argument-hint: "[low|middle|high|xhigh] <pr#> [pr#...] [--comment] [--summary]"
 ---
 
 # ssak-review
@@ -10,20 +10,24 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
-- `references/review-template.md`: severity levels and the chat report shown to the user.
+- `references/review-template.md`: severity levels and the chat report shown to the user, plus the reviewer brief and multi-PR report for two or more PRs.
 - `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
 - `../../agents/ssak-refuter.md`: refuter subagent instructions, used at `xhigh`.
+- `../../agents/ssak-reviewer.md`: reviewer subagent instructions, used for two or more PRs.
 
-## Subagent
-At `xhigh`, findings are checked by the `ssak-refuter` subagent (`ssak-ssak:ssak-refuter` when installed as a plugin). If it is not registered, read `../../agents/ssak-refuter.md` and pass its instructions with the brief to a general-purpose subagent.
+## Subagents
+- `ssak-refuter` (`ssak-ssak:ssak-refuter` when installed as a plugin) checks findings at `xhigh`.
+- `ssak-reviewer` (`ssak-ssak:ssak-reviewer`) reviews one PR when two or more are given.
+- If one is not registered, read its file above and pass its instructions with the brief to a general-purpose subagent.
 
 ## 0. Parse arguments
 - Effort: `low`, `middle`, `high` or `xhigh`. Default `middle` when omitted.
-- PR number: a positive integer, with an optional leading `#` stripped (`#42` → `42`). Required.
+- PR numbers: one or more positive integers, each with an optional leading `#` stripped (`#42` → `42`). At least one is required. Drop duplicates.
 - `--comment`: post findings as inline PR comments. Without it, nothing is posted to GitHub.
 - `--summary`: with `--comment`, also post the summary review body (verdict, severity counts, checks). Off by default. Without `--comment` it has no effect; say so in the report.
-- Anything else, or a missing PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr#> [--comment] [--summary]`.
-- Check `gh auth status` passes and the current directory is a git repo of the PR's repository. If not, say why and stop.
+- Anything else, or no PR number: stop and show the usage `/ssak-review [low|middle|high|xhigh] <pr#> [pr#...] [--comment] [--summary]`.
+- Check `gh auth status` passes and the current directory is a git repo of the PRs' repository. If not, say why and stop.
+- With one PR, continue with steps 1 to 4. With two or more, go to "Two or more PRs" below; the effort and flags apply to every PR.
 
 ## 1. Gather
 1. `gh pr view <pr> --json number,title,body,author,baseRefName,headRefName,headRefOid,files,additions,deletions,url` for the PR's intent and scope.
@@ -77,7 +81,17 @@ Report to the user in chat using the "Chat report" format in `references/review-
 5. If there are no findings: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
 6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
 
+## Two or more PRs: one reviewer per PR, then report together
+1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR, one at a time: concurrent runs share `FETCH_HEAD` and can check out another PR's head. Keep each `<head sha> <worktree path>`.
+2. Launch one `ssak-reviewer` per PR, all in parallel, with the "Reviewer brief" from `references/review-template.md`. The worktrees already exist, so do not use the subagent tool's workspace isolation option. Handle each PR independently: a reviewer that fails or returns no report ends that PR as not reviewed, with the reason.
+3. At `xhigh`, launch one fresh `ssak-refuter` per Critical or High finding across all PRs, in parallel, with only the finding (file:line, claim, failure scenario) and that PR's worktree path. Drop each `DISPROVED` finding from its PR's chat report, inline comments, counts and verdict. Reviewers cannot launch subagents, so the main agent does this.
+4. Remove all review worktrees in one call, as in step 3: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`. Fill in each chat report's Worktree line from its output.
+5. Deliver:
+   - Without `--comment`: the "Multi-PR report" from `references/review-template.md`, then each PR's chat report.
+   - With `--comment`: post one review per PR as in step 4 "With `--comment`", from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then the "Multi-PR report" with each review URL, then each PR's chat report.
+
 ## Rules
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
 - Write GitHub comments in the language of the PR description, in the tone `references/inline-template.md` sets.
 - Remove the review worktree only through `cleanup.sh` as in step 3, never with `--force`.
+- With two or more PRs, only the main agent posts to GitHub and removes worktrees.

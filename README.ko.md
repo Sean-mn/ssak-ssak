@@ -41,7 +41,7 @@ codex plugin add ssak-ssak@ssak-ssak
 |---|---|
 | `/ssak-issue <issue#> [issue#...]` | GitHub 이슈를 작업해요. 2개 이상이면 이슈별 worktree에서 병렬로 작업하고 검증 에이전트가 확인해요. |
 | `/ssak-issue --find` | 아무도 맡지 않은 열린 이슈를 보여줘요. |
-| `/ssak-review [low\|middle\|high\|xhigh] <pr#> [--comment] [--summary]` | 운영 영향, lint, 팀 규칙 중심으로 PR을 리뷰해요. `--comment`면 인라인 코멘트를 달아요. |
+| `/ssak-review [low\|middle\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | 운영 영향, lint, 팀 규칙 중심으로 PR을 리뷰해요. 2개 이상이면 PR마다 리뷰 에이전트가 병렬로 리뷰해요. `--comment`면 인라인 코멘트를 달아요. |
 | `/ssak-ci-doctor [owner/repo] <pr#>` | PR의 CI가 왜 실패했는지 찾아요. 실패한 체크마다 첫 진짜 에러, PR 탓인지 여부, 고칠 방법을 알려줘요. 읽기만 해요. |
 | `/ssak-contrib <owner/repo> <issue#>` | 레포의 기여 규칙과 AI 정책을 지켜 오픈소스에 기여하고, 승인을 받은 뒤 draft PR을 열어요. |
 | `/ssak-contrib <owner/repo> --find` | 아무도 맡지 않은 입문자용 이슈를 보여줘요. |
