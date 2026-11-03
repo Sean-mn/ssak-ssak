@@ -1,6 +1,6 @@
 ---
 name: ssak-issue
-description: Work on GitHub issues by number. One issue is handled directly by the main agent; two or more run in parallel, each in its own git worktree with a worker agent, then a verifier agent checks the result and the main agent reports. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue --find" or "work on issues 12 and 15".
+description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each, then a verifier agent checks the result and the main agent reports. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue --find" or "work on issues 12 and 15".
 argument-hint: "<issue#> [issue#...] | --find"
 ---
 
@@ -12,7 +12,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `../../agents/ssak-worker.md`: worker subagent instructions.
 - `../../agents/ssak-verifier.md`: verifier subagent instructions.
 - `scripts/base-branch.sh`: prints the ref to branch from. A develop-like branch if one exists, otherwise the default branch (main).
-- `scripts/make-worktrees.sh <num...>`: creates a `ssak/issue-<num>` branch and worktree per issue.
+- `scripts/make-worktrees.sh <num>[:<branch>]...`: creates a `.claude/worktrees/ssak-issue-<num>` worktree per issue on `<branch>` (default `ssak/issue-<num>`).
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
@@ -33,16 +33,24 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 3. Ask which issues to work on; several may be picked. Start nothing until the user picks.
 4. Continue from "One issue" or "Two or more issues" below with the picked numbers. Before starting a CLAIMED, NOT READY or TAKEN issue, confirm the user still wants it.
 
+## Branch names
+Name each issue's branch by the repo's own convention:
+1. Look for a branch naming rule in CONTRIBUTING.md (also under `.github/` and `docs/`), CLAUDE.md and AGENTS.md.
+2. If there is none, infer the pattern from recent branches: `gh pr list --state all --limit 30 --json headRefName -q '.[].headRefName'` and `git branch -r`. Ignore bot branches (dependabot, renovate) and long-lived ones (main, develop, release).
+3. Fill the pattern from the issue (`gh issue view <num> --json title,labels`): its number, a type in the repo's words (e.g. `fix` for a bug), and a short lowercase ASCII kebab-case summary of the title.
+4. If no clear pattern shows up, use `ssak/issue-<num>`.
+
 ## One issue: the main agent works directly
 1. Read it with `gh issue view <num> --comments`.
-2. If `git status --porcelain` is not empty, ask the user what to do before switching branches.
-3. `base=$(bash <skill dir>/scripts/base-branch.sh)`, then `git switch --no-track -c ssak/issue-<num> "$base"`. If the branch already exists, `git switch ssak/issue-<num>` instead.
+2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`.
+3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
 5. Commit as `<type>: <summary> (#<num>)`.
-6. Report using the final report format in `references/templates.md`.
+6. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
+7. Report using the final report format in `references/templates.md`.
 
 ## Two or more issues: work, verify, report
-1. Run `bash <skill dir>/scripts/make-worktrees.sh <num...>`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
+1. Pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per issue, all in parallel. Use the "Worker brief" from `references/templates.md`. The script already created the worktrees, so do not use the subagent tool's workspace isolation option.
 3. Handle each issue independently; never wait on another issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
@@ -59,4 +67,4 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
 - The main agent relays the verifier's verdict as is and does not edit issue branches itself.
-- Remove worktrees only through `cleanup.sh remove --keep-branch` as in step 5, never with `--force`. Never delete issue branches.
+- Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.
