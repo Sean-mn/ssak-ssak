@@ -31,7 +31,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 1. Run `bash <skill dir>/scripts/find-issues.sh "$(gh repo view --json nameWithOwner -q .nameWithOwner)"`.
 2. Show the user the FREE issues first (issues assigned to them are listed first), then CLAIMED with the claim line. Summarize NOT READY and TAKEN in one line each with their numbers.
 3. Ask which issues to work on; several may be picked. Start nothing until the user picks.
-4. Continue from "One issue" or "Two or more issues" below with the picked numbers. Before starting a CLAIMED or NOT READY issue, confirm the user still wants it.
+4. Continue from "One issue" or "Two or more issues" below with the picked numbers. Before starting a CLAIMED, NOT READY or TAKEN issue, confirm the user still wants it.
 
 ## One issue: the main agent works directly
 1. Read it with `gh issue view <num> --comments`.
