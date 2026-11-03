@@ -12,5 +12,5 @@
 - 
 
 ## Checklist
-- [ ] Changed `skills/` or a manifest: version bumped in both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` (merging publishes a release)
+- [ ] Version left alone: a separate `chore: release X.Y.Z` PR bumps it in both manifests and publishes a release
 - [ ] New or changed command: skills table updated in both README.md and README.ko.md
