@@ -9,10 +9,6 @@ Personal skill harness for Claude Code and Codex: issue work, PR review, open so
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-
-
-</div>
-
 ## Quick Start
 
 Requires `git`, `bash` (Git Bash on Windows) and the [GitHub CLI](https://cli.github.com/) signed in with `gh auth login`.
