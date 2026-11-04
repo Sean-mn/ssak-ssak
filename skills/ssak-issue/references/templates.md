@@ -7,6 +7,7 @@ Replace `<...>` with real values.
 Work on issue #<num>.
 - worktree: <worktree path>  (do all work inside it)
 - branch: <branch>  (base: <base>)
+- commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
 - read the issue: gh issue view <num> --comments
 Implement it, commit, then answer in your defined report format.
 ```
@@ -16,6 +17,7 @@ Implement it, commit, then answer in your defined report format.
 Work on coupled issues #<num>, #<num>... in this order. <why they are coupled, one line>
 - #<num>: worktree <worktree path>, branch <branch>, base <base>
 - #<num>: worktree <worktree path>, branch <branch>, base <base or "stacked on <earlier branch>">
+Commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
 For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier branch> after the earlier issue is committed.
 Do each issue only in its own worktree, commit it there, then answer with one report per issue in your defined format.
 ```
@@ -40,9 +42,9 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 ```
 ## ssak-issue result (base: <base>)
 
-| Issue | Result | Branch | Reworks | Summary |
-|---|---|---|---|---|
-| #<num> | ✅ PASS / ❌ FAIL / ⛔ BLOCKED | <branch> | <0-2> | <one line> |
+| Issue | Result | Branch | Model | Reworks | Summary |
+|---|---|---|---|---|---|
+| #<num> | ✅ PASS / ❌ FAIL / ⛔ BLOCKED | <branch> | <the model that did the work, e.g. sonnet, opus; "sonnet → opus" when a rework moved it up> | <0-2> | <one line> |
 
 ### Needs attention
 - #<num>: <FAIL reason, BLOCKED reason, verifier NOTE, "suspected pre-existing failure" items>
