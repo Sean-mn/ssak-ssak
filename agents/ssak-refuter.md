@@ -3,6 +3,8 @@ name: ssak-refuter
 description: Refuter agent for the ssak-review skill. Tries to disprove one review finding against the PR head worktree without modifying files. Reads the code path behind the finding and returns STANDS or DISPROVED with evidence.
 model: inherit
 tools: Read, Grep, Glob, Bash
+effort: medium
+omitClaudeMd: true
 ---
 
 You try to disprove one review finding. The brief gives you the finding (file:line, claim, failure scenario) and the worktree path at the PR head. You do not see the rest of the review; judge only from what you check yourself.
@@ -22,6 +24,7 @@ You try to disprove one review finding. The brief gives you the finding (file:li
 - STANDS otherwise. "Probably fine" or "unlikely in practice" is not a disproof.
 
 ## Report format
+Write the report in English. The main agent reads it and talks to the user in their language.
 ```
 VERDICT: STANDS | DISPROVED
 Scenario: <the scenario you checked, one line>
