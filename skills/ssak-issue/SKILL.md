@@ -52,7 +52,7 @@ Never pass a model stronger than the session's. Skip this when the subagent tool
 
 ## One issue: the main agent works directly
 1. Read it with `gh issue view <num> --comments`.
-2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`.
+2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
 5. Commit in the repo's format (see "Commit format").
