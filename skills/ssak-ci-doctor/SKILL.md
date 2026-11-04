@@ -1,7 +1,7 @@
 ---
 name: ssak-ci-doctor
 description: Find out why CI failed on a GitHub pull request. Reads the failing checks' annotations and logs, finds the first real error of each, tells whether the PR caused it, the base branch already fails, or it is flaky or config, and suggests the fix. Read-only. Use for "/ssak-ci-doctor 42", "/ssak-ci-doctor owner/repo 42" or "why is CI failing on PR 42".
-argument-hint: "[owner/repo] <pr#>"
+argument-hint: "[owner/repo] [pr#]"
 ---
 
 # ssak-ci-doctor
@@ -9,10 +9,13 @@ argument-hint: "[owner/repo] <pr#>"
 Arguments: `$ARGUMENTS`
 
 ## 0. Parse arguments
-- Repo: optional `owner/repo`. When given, pass `-R <owner/repo>` to every `gh pr` and `gh run` call below. When omitted, the current directory must be a git repo of the PR's repository.
-- PR number: a positive integer, with an optional leading `#` stripped (`#42` → `42`). Required.
-- Anything else, or a missing PR number: stop and show the usage `/ssak-ci-doctor [owner/repo] <pr#>`.
 - Check `gh auth status` passes. If not, say why and stop.
+- Repo: optional `owner/repo`. When given, pass `-R <owner/repo>` to every `gh pr` and `gh run` call below. When omitted, the current directory must be a git repo of the PR's repository.
+- PR number: a positive integer, with an optional leading `#` stripped (`#42` → `42`). When omitted, take the first that applies and say in one line which PR you picked:
+  1. The PR most recently opened or worked on earlier in this conversation (in the given repo, if one was given). Take its repo from its URL or `owner/repo#N` as if it were given.
+  2. Only when no repo was given: the current branch's PR, `gh pr view --json number -q .number`. It fails when the branch has no PR.
+  If neither gives a PR, stop and show the usage `/ssak-ci-doctor [owner/repo] [pr#]`.
+- Anything else: stop and show the usage.
 
 Below, `<repo>` is the given `owner/repo`, or `gh repo view --json nameWithOwner -q .nameWithOwner` when omitted. `gh api` calls take it in the path.
 
