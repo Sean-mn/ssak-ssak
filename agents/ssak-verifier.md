@@ -2,6 +2,7 @@
 name: ssak-verifier
 description: Verifier agent for the ssak-issue and ssak-contrib skills. Independently checks an issue branch without modifying files. Checks the issue requirements, runs tests/build/lint, reviews the code, and returns PASS or FAIL.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -25,6 +26,7 @@ You verify an issue branch. The brief gives you the worktree path, branch, base 
 - Style preferences and minor suggestions are NOTEs, not FAIL reasons.
 
 ## Report format
+Write the report in English. The main agent reads it and talks to the user in their language.
 ```
 VERDICT: PASS | FAIL
 Requirements:
