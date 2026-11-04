@@ -63,9 +63,9 @@ Shown first when two or more PRs were reviewed, followed by each PR's "Chat repo
 ```
 ## ssak-review: <n> PRs · effort: <level>
 
-| PR | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
-|---|---|---|---|---|---|---|
-| #<num> <title> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
+| PR | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
+|---|---|---|---|---|---|---|---|
+| #<num> <title> | <reviewer model, e.g. sonnet, opus> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
 
 <Not reviewed: #<num>: <reason>. Omit when every PR was reviewed.>
 ```

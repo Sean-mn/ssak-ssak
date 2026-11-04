@@ -95,6 +95,8 @@ feat/4-x" "$(offline bash "$cleanup" remove --keep-branch issue-4; git branch --
 
 echo "# base-branch.sh, develop-like"
 git branch -q develop
+check "develop with nothing new is skipped" "origin/main" "$(bash "$skills/ssak-issue/scripts/base-branch.sh")"
+git branch -q -f develop "$(git commit-tree -p HEAD -m dev "HEAD^{tree}")"
 check "local develop" "develop" "$(bash "$skills/ssak-issue/scripts/base-branch.sh")"
 git push -q origin develop 2>/dev/null
 check "remote develop first" "origin/develop" "$(bash "$skills/ssak-issue/scripts/base-branch.sh")"
