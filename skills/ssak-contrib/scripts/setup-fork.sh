@@ -4,6 +4,7 @@
 # Reuses the current repo if it is a clone of upstream or the fork; otherwise clones next to it (or into cwd).
 # Output lines: "fork <owner/name>", "push-remote <remote>", "base <remote>/<branch>", "path <dir>", "branch <name>"
 # Exit 3: the clone has uncommitted changes.
+# Requires: bash, git, gh signed in (gh auth login).
 set -euo pipefail
 
 repo=${1:-}; n=${2:-}; base=${3:-}

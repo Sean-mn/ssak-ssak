@@ -2,6 +2,7 @@
 name: ssak-clean-up
 description: Clean up what the ssak skills leave in the current repo, i.e. ssak-issue and ssak-review worktrees under .claude/worktrees and ssak/issue-N and ssak/contrib-N branches. Lists each item as SAFE (nothing would be lost) or RISKY, and removes only what the user approves. Use for "/ssak-clean-up" or "clean up ssak worktrees".
 argument-hint: "[id...]"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-clean-up

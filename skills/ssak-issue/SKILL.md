@@ -2,6 +2,7 @@
 name: ssak-issue
 description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --herdr, each worker runs as its own Claude Code pane in Herdr instead of a subagent. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue 12 15 --herdr medium", "/ssak-issue --find" or "work on issues 12 and 15".
 argument-hint: "<issue#> [issue#...] [--herdr [model] <effort>] | --find"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-issue
@@ -17,6 +18,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
+- `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
 
 ## Subagents
 `../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:
@@ -26,7 +28,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
-3. If `--herdr` is among the arguments, take it and the words after it: `[model] <effort>`, as in ssak-herdr (`low`, `medium`, `high`, `xhigh`, `max`). No effort level: stop and show the usage; never pick an effort for the user. Then run `test "${HERDR_ENV:-}" = 1`. If that fails, say this session is not inside a Herdr pane and stop. With one issue `--herdr` changes nothing; say so in one line.
+3. If `--herdr` is among the arguments, take it and the words after it: `[model] <effort>`, as in ssak-herdr (`low`, `medium`, `high`, `xhigh`, `max`). No effort level: stop and show the usage; never pick an effort for the user. Then run `test "${HERDR_ENV:-}" = 1`. If that fails, say this session is not inside a Herdr pane and stop. If `command -v herdr` fails, say Herdr is not installed and stop. With one issue `--herdr` changes nothing; say so in one line.
 4. Otherwise strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -60,9 +62,20 @@ Never pass a model stronger than the session's. Skip this when the subagent tool
 5. Commit in the repo's format (see "Commit format").
 6. Launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief", giving your own summary and test results as the worker report. On `FAIL`, fix the reasons with new commits (no amend) and verify again with a fresh verifier. At most 2 reworks; if the third verification still fails, the issue ends as FAIL.
 7. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
-8. Report using the final report format in `references/templates.md`.
+8. Report using the final report format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Two or more issues: work, verify, report
+Copy this checklist into your reply and tick it as you go:
+```
+- [ ] 1. Read issues, name branches, run make-worktrees.sh
+- [ ] 2. Scout issues that do not name their files
+- [ ] 3. Group coupled issues, pick models, tell the user
+- [ ] 4. Launch one worker per group (subagent or Herdr pane)
+- [ ] 5. Verify each DONE issue with a fresh verifier
+- [ ] 6. Rework each FAIL, at most 2 per issue; back to 5 after each
+- [ ] 7. Check overlaps, remove worktrees with cleanup.sh --keep-branch, final report
+```
+
 1. Read every issue with `gh issue view <num> --comments`, pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
 3. Group coupled issues, using the scout maps where you have them: one needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model (see "Worker model"). Tell the user the coupled groups and each group's model in one line before starting.
@@ -78,7 +91,7 @@ Never pass a model stronger than the session's. Skip this when the subagent tool
 7. When every issue is finished:
    1. Compare changed files across the issue branches with `git diff --name-only <base>...<branch>` to find overlaps.
    2. Remove the worktrees but keep the branches, which hold the work: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`. Never pass `--force`; a worktree it skips (uncommitted changes) stays and goes in the report.
-   3. Report using the "Final report" format in `references/templates.md`.
+   3. Report using the "Final report" format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Herdr workers (`--herdr`)
 Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Only these steps change:

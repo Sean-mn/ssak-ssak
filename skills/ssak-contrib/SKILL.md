@@ -2,6 +2,7 @@
 name: ssak-contrib
 description: Contribute to someone else's open source repo by issue. Reads the repo's contribution rules (including any AI policy), checks nobody else has the issue, forks and branches, implements, verifies against the repo's rules, then opens a draft PR after the user approves. With --find, lists beginner-friendly issues nobody has taken. Use for "/ssak-contrib owner/repo 123", "/ssak-contrib owner/repo --find" or "contribute to owner/repo issue 123".
 argument-hint: "<owner/repo> <issue#> | <owner/repo> --find"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-contrib
@@ -13,11 +14,24 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/issue-status.sh <owner/repo> <issue#>`: prints state, assignees, labels, linked PRs (closing keyword, Development sidebar link, mentions), PRs linked in comments, claim-like comments and the last 10 comments.
 - `../ssak-issue/scripts/find-issues.sh <owner/repo> --beginner`: lists open beginner-labeled issues grouped as FREE, CLAIMED, NOT READY and TAKEN. Both scripts source `../ssak-issue/scripts/common.sh`.
 - `scripts/setup-fork.sh <owner/repo> <issue#> [base-branch]`: forks if needed, clones or reuses a clone, and creates `ssak/contrib-<issue#>`. Prints `fork`, `push-remote`, `base`, `path`, `branch` lines. Exit 3 means the clone has uncommitted changes.
+- `scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes the branch to the fork and opens a draft PR, the only way this skill pushes or opens PRs. Refuses (exit 2) to push to upstream, never force-pushes, prints the PR URL.
 - `references/rules-checklist.md`: which rules to extract and when to stop.
 - `references/templates.md`: pre-flight summary, verifier brief, PR body, PR draft and final report.
 
 ## Subagent
 Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../../agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent.
+
+## Checklist
+Copy this into your reply and tick it as you go:
+```
+- [ ] 1. Rules and issue status; stop if AI is banned or the issue is taken
+- [ ] 2. Pre-flight summary; wait for yes
+- [ ] 3. setup-fork.sh
+- [ ] 4. Implement with the repo's own commands
+- [ ] 5. Verify; on FAIL fix and back to 5, at most 2 reworks
+- [ ] 6. PR draft; wait for yes; open-pr.sh
+- [ ] 7. Final report
+```
 
 ## 0. Parse arguments
 - Accept `owner/repo 123`, `owner/repo #123`, an issue URL `https://github.com/owner/repo/issues/123`, or `owner/repo --find`.
@@ -54,14 +68,13 @@ Run `setup-fork.sh <owner/repo> <issue#> [base-branch]`, passing the target bran
 
 ## 6. PR draft and confirmation
 1. Fill the repo's PR template if it has one; otherwise use the "PR body" template. Include `Fixes #<issue#>` and any required AI disclosure. Follow the PR title format.
-2. Show the "PR draft" from `references/templates.md` and ask whether to push and open it.
-3. On yes:
+2. Show the "PR draft" from `references/templates.md` and ask whether to push and open it. If the user wants changes: wording → back to 6.1; code → back to 4, then 5.
+3. On yes, write the body to a temp file and run:
    ```
-   git -C <path> push -u <push-remote> <branch>
-   gh pr create -R <owner/repo> --draft --base <base branch> --head <me>:<branch> --title "<title>" --body-file <file>
+   bash <skill dir>/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base branch> "<title>" <body file>
    ```
-   When the repo is the user's own, `--head` is just `<branch>`.
-4. Finish with the "Final report".
+   `<base branch>` is the `base` line from `setup-fork.sh` without the remote (`upstream/main` → `main`). On exit 2, tell the user why it refused and stop.
+4. Finish with the "Final report". If a verifier FAIL reason was not covered by the brief, the repo's rules or `references/rules-checklist.md`, propose one new rule for it at the end and add it only after the user approves.
 
 ## Rules
 - Nothing visible on GitHub happens before the user's yes in step 2 (fork) and step 6 (push and PR).

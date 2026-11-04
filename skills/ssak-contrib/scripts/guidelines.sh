@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Print <owner/repo>'s contribution rule files from GitHub without cloning or forking.
 # Looks in /, .github/, docs/ and .github/PULL_REQUEST_TEMPLATE/; each file is printed under "===== <path> =====".
+# Requires: bash, gh signed in (gh auth login). No jq: JSON goes through gh --jq.
 set -euo pipefail
 
 repo=${1:-}

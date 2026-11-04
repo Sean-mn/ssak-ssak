@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Check out PR <n>'s head in a detached worktree at .claude/worktrees/ssak-review-<n> (reused on rerun).
 # Output: "<head sha> <path>"
+# Requires: bash, git, gh signed in (gh auth login).
 set -euo pipefail
 
 n=${1:-}

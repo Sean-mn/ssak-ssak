@@ -2,6 +2,7 @@
 # Print what decides whether <owner/repo>#<issue> is free to take: state, assignees, labels,
 # linked PRs (closing keywords, manual Development links, mentions), PRs linked in comments,
 # comments that look like a claim, and the last 10 comments.
+# Requires: bash, gh signed in (gh auth login). No jq: JSON goes through gh --jq.
 set -euo pipefail
 . "$(dirname "$0")/../../ssak-issue/scripts/common.sh"
 
