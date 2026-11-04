@@ -37,6 +37,8 @@ codex plugin add ssak-ssak@ssak-ssak
 |---|---|
 | `/ssak-issue <issue#> [issue#...]` | GitHub 이슈를 작업하고 검증 에이전트가 확인해요. 2개 이상이면 이슈별 worktree에서 병렬로 작업해요. |
 | `/ssak-issue --find` | 아무도 맡지 않은 열린 이슈를 보여줘요. |
+| `/ssak-issue <issue#> <issue#>... --herdr [model] <effort>` | 같은 작업을 하되, 워커마다 Herdr에 Claude Code 창을 따로 띄워서 직접 보고 끼어들 수 있어요. |
+| `/ssak-herdr [model] <effort> <task>` | Herdr에 새 Claude Code 창을 띄우고 작업을 맡겨요. effort는 꼭 줘야 하고, 모델을 빼면 메인 창의 모델을 써요. `list`, `read <name>`, `send <name> <text>`로 진행 상황을 봐요. Herdr가 필요해요. |
 | `/ssak-review [low\|medium\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | 운영 영향, lint, 팀 규칙 중심으로 PR을 리뷰해요. 2개 이상이면 PR마다 리뷰 에이전트가 병렬로 리뷰해요. `--comment`면 인라인 코멘트를 달아요. |
 | `/ssak-ci-doctor [owner/repo] [pr#]` | PR의 CI가 왜 실패했는지 찾아요. 실패한 체크마다 첫 진짜 에러, PR 탓인지 여부, 고칠 방법을 알려줘요. 번호를 빼면 방금 작업한 PR이나 현재 브랜치의 PR을 봐요. 읽기만 해요. |
 | `/ssak-contrib <owner/repo> <issue#>` | 레포의 기여 규칙과 AI 정책을 지켜 오픈소스에 기여하고, 승인을 받은 뒤 draft PR을 열어요. |

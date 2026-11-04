@@ -37,6 +37,8 @@ Update with `codex plugin marketplace upgrade`.
 |---|---|
 | `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues, each checked by a verifier agent. Two or more run in parallel worktrees. |
 | `/ssak-issue --find` | Lists open issues nobody has taken yet. |
+| `/ssak-issue <issue#> <issue#>... --herdr [model] <effort>` | Same, but each worker runs as its own Claude Code pane in Herdr, so you can watch and steer it. |
+| `/ssak-herdr [model] <effort> <task>` | Opens a new Claude Code pane in Herdr and hands it the task. Effort is required; without a model it uses the main pane's model. `list`, `read <name>` and `send <name> <text>` check on it. Needs Herdr. |
 | `/ssak-review [low\|medium\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | Reviews PRs for production impact, lint and team rules. Two or more are reviewed in parallel, one reviewer agent per PR. `--comment` posts inline comments. |
 | `/ssak-ci-doctor [owner/repo] [pr#]` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Without a number, uses the PR you just worked on or the current branch's. Read-only. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |

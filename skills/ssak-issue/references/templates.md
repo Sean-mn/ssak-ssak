@@ -22,6 +22,13 @@ For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier 
 Do each issue only in its own worktree, commit it there, then answer with one report per issue in your defined format.
 ```
 
+## Herdr worker brief (file read by a Claude Code pane)
+```
+You are the ssak-worker. Read <absolute path of ../../agents/ssak-worker.md> and follow it as your instructions.
+<the Worker brief or Coupled worker brief above, filled in>
+When done, write your report in that file's report format to <main repo>/.claude/worktrees/ssak-issue-<num>.report.md (one file per issue for a coupled group), then reply only "REPORTED". Write nothing else outside your worktree.
+```
+
 ## Verifier brief (ssak-verifier)
 ```
 Verify issue #<num>.
