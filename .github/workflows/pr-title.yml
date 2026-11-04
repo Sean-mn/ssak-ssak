@@ -1,0 +1,24 @@
+name: PR title
+
+# Separate from CI so a title edit ("edited") reruns only this check, not the whole test matrix
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # the PR merge commit and its first parent, the base it merges into
+
+      - name: Title type and version bump
+        env:
+          TITLE: ${{ github.event.pull_request.title }}  # through env, never inline: titles are user input
+        run: |
+          base=$(git show HEAD^1:.claude-plugin/plugin.json | jq -r .version)
+          bash .github/pr-title.sh "$TITLE" "$base" "$(jq -r .version .claude-plugin/plugin.json)"

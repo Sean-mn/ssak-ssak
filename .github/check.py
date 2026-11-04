@@ -56,6 +56,13 @@ for skill in sorted(root.glob("skills/*/SKILL.md")):
     if data.get("name") not in (None, skill.parent.name):
         errors.append(f"{rel(skill)}: name '{data['name']}' does not match folder '{skill.parent.name}'")
 
+# Every skill has a row in both READMEs' skills table
+for readme in ("README.md", "README.ko.md"):
+    text = (root / readme).read_text(encoding="utf-8")
+    for skill in sorted(root.glob("skills/*/SKILL.md")):
+        if f"| `/{skill.parent.name}" not in text:
+            errors.append(f"{readme}: no row for /{skill.parent.name} in the skills table")
+
 # Files skill docs point at (scripts/x.sh, ../ssak-issue/references/y.md, ../../agents/z.md) must exist, relative to the skill folder
 for doc in sorted(root.glob("skills/*/**/*.md")):
     skill_dir = root / "skills" / doc.relative_to(root / "skills").parts[0]

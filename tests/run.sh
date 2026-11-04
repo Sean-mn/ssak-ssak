@@ -115,6 +115,17 @@ git tag -d v0.0.1 >/dev/null
 check "first release link" "**Full Changelog**: https://github.com/Sean-mn/ssak-ssak/commits/v0.0.2" \
   "$(bash "$notes" v0.0.2 | grep 'Full Changelog')"
 
+echo "# pr-title.sh"
+title="$skills/../.github/pr-title.sh"
+t() { bash "$title" "$@" >/dev/null 2>&1; echo $?; }
+check "type title" "0" "$(t "feat(review): add x" 0.9.0 0.9.0)"
+check "release title" "0" "$(t "release v0.10.0: multi-pr review, shared agents" 0.9.0 0.10.0)"
+check "unknown type" "1" "$(t "feature: add x" 0.9.0 0.9.0)"
+check "uppercase release" "1" "$(t "release v0.10.0: Multi-PR review" 0.9.0 0.10.0)"
+check "release title, other version" "1" "$(t "release v0.10.1: x" 0.9.0 0.10.0)"
+check "release without bump" "1" "$(t "release v0.9.0: x" 0.9.0 0.9.0)"
+check "bump outside a release" "1" "$(t "chore: release 0.10.0" 0.9.0 0.10.0)"
+
 echo "# claim regex (gh jq)"
 if gh auth status >/dev/null 2>&1; then
   # shellcheck source=skills/ssak-issue/scripts/common.sh
