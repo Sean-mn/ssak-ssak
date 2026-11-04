@@ -35,7 +35,7 @@ codex plugin add ssak-ssak@ssak-ssak
 
 | 명령 | 하는 일 |
 |---|---|
-| `/ssak-issue <issue#> [issue#...]` | GitHub 이슈를 작업하고 검증 에이전트가 확인해요. 2개 이상이면 이슈별 worktree에서 병렬로 작업해요. |
+| `/ssak-issue <issue#> [issue#...]` | GitHub 이슈를 작업하고 검증 에이전트가 확인해요. 2개 이상이면 이슈별 worktree에서 병렬로 작업해요. 먼저 정찰 에이전트가 이슈마다 건드릴 파일을 찾아서, 겹치는 이슈는 한 워커에게 맡겨요. |
 | `/ssak-issue --find` | 아무도 맡지 않은 열린 이슈를 보여줘요. |
 | `/ssak-issue <issue#> <issue#>... --herdr [model] <effort>` | 같은 작업을 하되, 워커마다 Herdr에 Claude Code 창을 따로 띄워서 직접 보고 끼어들 수 있어요. |
 | `/ssak-herdr [model] <effort> <task>` | Herdr에 새 Claude Code 창을 띄우고 작업을 맡겨요. effort는 꼭 줘야 하고, 모델을 빼면 메인 창의 모델을 써요. `list`, `read <name>`, `send <name> <text>`로 진행 상황을 봐요. Herdr가 필요해요. |

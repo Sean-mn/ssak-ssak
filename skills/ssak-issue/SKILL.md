@@ -11,6 +11,7 @@ Arguments: `$ARGUMENTS`
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `../../agents/ssak-worker.md`: worker subagent instructions.
 - `../../agents/ssak-verifier.md`: verifier subagent instructions.
+- `../../agents/ssak-scout.md`: scout subagent instructions.
 - `scripts/base-branch.sh`: prints the ref to branch from. A develop-like branch that has commits the default branch lacks, otherwise the default branch (main).
 - `scripts/make-worktrees.sh <num>[:<branch>]...`: creates a `.claude/worktrees/ssak-issue-<num>` worktree per issue on `<branch>` (default `ssak/issue-<num>`).
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
@@ -18,9 +19,9 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: agent briefs and the final report format.
 
 ## Subagents
-`../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` define the two subagents: the worker for two or more issues, the verifier for every issue:
-- If `ssak-worker` / `ssak-verifier` (or `ssak-ssak:ssak-worker` / `ssak-ssak:ssak-verifier`) are already registered in the harness, invoke them by name.
-- Otherwise, read `../../agents/ssak-worker.md` and `../../agents/ssak-verifier.md` and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
+`../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:
+- If `ssak-worker` / `ssak-verifier` / `ssak-scout` (or `ssak-ssak:ssak-worker` / `ssak-ssak:ssak-verifier` / `ssak-ssak:ssak-scout`) are already registered in the harness, invoke them by name.
+- Otherwise, read the agent file and either register them dynamically (e.g., `define_subagent`) or pass their instructions along with the brief to a general-purpose subagent.
 
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
@@ -53,7 +54,7 @@ Never pass a model stronger than the session's. Skip this when the subagent tool
 
 ## One issue: the main agent works directly
 1. Read it with `gh issue view <num> --comments`.
-2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`.
+2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
 5. Commit in the repo's format (see "Commit format").
@@ -62,32 +63,33 @@ Never pass a model stronger than the session's. Skip this when the subagent tool
 8. Report using the final report format in `references/templates.md`.
 
 ## Two or more issues: work, verify, report
-1. Read every issue with `gh issue view <num> --comments` and group coupled issues: one needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model (see "Worker model"). Tell the user the coupled groups and each group's model in one line before starting.
-2. Pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
-3. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group on its model, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
+1. Read every issue with `gh issue view <num> --comments`, pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
+2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
+3. Group coupled issues, using the scout maps where you have them: one needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model (see "Worker model"). Tell the user the coupled groups and each group's model in one line before starting.
+4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group on its model, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
-4. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
+5. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
    - If the worker reports `DONE`, launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief".
-5. If verification returns `FAIL`, request a rework.
+6. If verification returns `FAIL`, request a rework.
    - Send the "Rework request" to the same worker with a message tool (`SendMessage` / `send_message`). If unavailable, or the worker ran on `sonnet`, start a new worker on the session model and include the previous worker's report.
    - After the rework, verify again with a fresh verifier so it is not anchored on the earlier verdict.
    - At most 2 reworks per issue. If the third verification still fails, the issue ends as FAIL.
-6. When every issue is finished:
+7. When every issue is finished:
    1. Compare changed files across the issue branches with `git diff --name-only <base>...<branch>` to find overlaps.
    2. Remove the worktrees but keep the branches, which hold the work: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`. Never pass `--force`; a worktree it skips (uncommitted changes) stays and goes in the report.
    3. Report using the "Final report" format in `references/templates.md`.
 
 ## Herdr workers (`--herdr`)
 Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Only these steps change:
-- Step 3, launch: for each group,
+- Step 4, launch: for each group,
   1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md` (the first issue's number for a coupled group). That folder is git-excluded by `make-worktrees.sh`.
   2. `herdr pane split --current --direction <right|down> --cwd "<worktree path>" --no-focus`: `right` for the first, then alternate so the panes stay usable. Read the pane ID from `.result.pane.pane_id`.
   3. `herdr agent start issue-<num> --kind claude --pane <pane id> -- --model <model> --effort <effort> -n issue-<num>`. The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model" picked it, otherwise this session's own full model ID. On `agent_not_ready`, read it with `herdr agent read issue-<num> --lines 40` and ask the user to answer the dialog in that pane.
   4. `herdr agent prompt issue-<num> "Read <brief path> and follow it." --wait --timeout 60000`. A timeout does not mean the prompt was lost: read the pane before sending again.
-- Step 4, waiting: run `herdr agent wait issue-<num>` per worker in the background (it settles on `idle`, `done` or `blocked`), and never poll. On `blocked`, show the user the question from `herdr agent read issue-<num> --lines 40`; do not answer it. On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
-- Step 5, rework: delete the old report file, then send the "Rework request" with `herdr agent prompt issue-<num> "<request>"`, written to a file first like the brief. A worker that "Worker model" put on `sonnet` gets a new pane on the session model instead (same effort), with the previous report in its brief; a model the user gave stays.
-- Step 6, before removing worktrees: close each pane this run started with `herdr pane close <pane id>`, since a session still sitting in a worktree keeps it from being removed. Delete the brief and report files after the final report.
+- Step 5, waiting: run `herdr agent wait issue-<num>` per worker in the background (it settles on `idle`, `done` or `blocked`), and never poll. On `blocked`, show the user the question from `herdr agent read issue-<num> --lines 40`; do not answer it. On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
+- Step 6, rework: delete the old report file, then send the "Rework request" with `herdr agent prompt issue-<num> "<request>"`, written to a file first like the brief. A worker that "Worker model" put on `sonnet` gets a new pane on the session model instead (same effort), with the previous report in its brief; a model the user gave stays.
+- Step 7, before removing worktrees: close each pane this run started with `herdr pane close <pane id>`, since a session still sitting in a worktree keeps it from being removed. Delete the brief and report files after the final report.
 
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.

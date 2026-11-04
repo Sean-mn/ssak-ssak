@@ -2,6 +2,14 @@
 
 Replace `<...>` with real values.
 
+## Scout brief (ssak-scout)
+```
+Map issue #<num> to the code it would change.
+- worktree: <worktree path>  (at base <base>; read only)
+- read the issue: gh issue view <num> --comments
+Answer in your defined report format.
+```
+
 ## Worker brief (ssak-worker)
 ```
 Work on issue #<num>.
@@ -9,6 +17,8 @@ Work on issue #<num>.
 - branch: <branch>  (base: <base>)
 - commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
 - read the issue: gh issue view <num> --comments
+- scout map (a starting point, check it yourself; omit the line if there is none):
+<full scout report>
 Implement it, commit, then answer in your defined report format.
 ```
 
@@ -18,6 +28,8 @@ Work on coupled issues #<num>, #<num>... in this order. <why they are coupled, o
 - #<num>: worktree <worktree path>, branch <branch>, base <base>
 - #<num>: worktree <worktree path>, branch <branch>, base <base or "stacked on <earlier branch>">
 Commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
+Scout maps (a starting point, check them yourself; omit for issues without one):
+<full scout report per issue>
 For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier branch> after the earlier issue is committed.
 Do each issue only in its own worktree, commit it there, then answer with one report per issue in your defined format.
 ```
