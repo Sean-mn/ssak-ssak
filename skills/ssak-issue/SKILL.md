@@ -1,7 +1,7 @@
 ---
 name: ssak-issue
 description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --herdr, each worker runs as its own Claude Code pane in Herdr instead of a subagent. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue 12 15 --herdr medium", "/ssak-issue --find" or "work on issues 12 and 15".
-argument-hint: "<issue#> [issue#...] [--herdr [model] <effort>] | --find"
+argument-hint: "<issue#> [issue#...] [--herdr [model] [effort]] | --find"
 # for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
@@ -28,7 +28,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
-3. If `--herdr` is among the arguments, take it and the words after it: `[model] <effort>`, as in ssak-herdr (`low`, `medium`, `high`, `xhigh`, `max`). No effort level: stop and show the usage; never pick an effort for the user. Then run `test "${HERDR_ENV:-}" = 1`. If that fails, say this session is not inside a Herdr pane and stop. If `command -v herdr` fails, say Herdr is not installed and stop. With one issue `--herdr` changes nothing; say so in one line.
+3. If `--herdr` is among the arguments, take it and the words after it: `[model] [effort]`, as in ssak-herdr (`low`, `medium`, `high`, `xhigh`, `max`). No effort level: use this session's own effort from `echo "$CLAUDE_EFFORT"`; if that is empty, leave `--effort` out of the agent start command. Then run `test "${HERDR_ENV:-}" = 1`. If that fails, say this session is not inside a Herdr pane and stop. If `command -v herdr` fails, say Herdr is not installed and stop. With one issue `--herdr` changes nothing; say so in one line.
 4. Otherwise strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
