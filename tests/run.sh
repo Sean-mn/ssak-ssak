@@ -142,7 +142,7 @@ esac
 EOF
 chmod +x "$tmp/bin2/gh"
 stub() { PATH="$tmp/bin2:$PATH" "$@"; }
-export STUB_HEAD=abc123 STUB_REVIEWS= STUB_LOG="$tmp/pr-create.log"
+export STUB_HEAD=abc123 STUB_REVIEWS='' STUB_LOG="$tmp/pr-create.log"
 
 echo "# post-review.sh"
 post="$skills/ssak-review/scripts/post-review.sh"
