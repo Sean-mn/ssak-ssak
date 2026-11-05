@@ -2,6 +2,7 @@
 name: ssak-review
 description: Review one or more GitHub pull requests, focused on what each PR changes and what could hurt production, plus lint and team rules. Effort level sets how deep it goes. Two or more PRs are reviewed in parallel, one reviewer agent per PR, and reported together. Reports findings by severity to the user, or posts them as inline PR comments with --comment. Use for "/ssak-review high 42 --comment", "/ssak-review 42 43" or "review PR 42".
 argument-hint: "[low|medium|high|xhigh] <pr#> [pr#...] [--comment] [--summary]"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-review
@@ -10,6 +11,8 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`.
+- `scripts/post-review.sh <pr#> <payload.json>`: posts one review, the only way this skill writes to GitHub. Refuses (exit 2) a non-`COMMENT` event, a `commit_id` that is not the PR head, or a head you already reviewed. Exit 3 means GitHub rejected the payload.
+- `../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`: removes review worktrees.
 - `references/review-template.md`: severity levels and the chat report shown to the user, plus the reviewer brief and multi-PR report for two or more PRs.
 - `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
 - `../../agents/ssak-refuter.md`: refuter subagent instructions, used at `xhigh`.
@@ -61,6 +64,9 @@ bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>
 Never pass `--force`. If it skips the worktree (e.g. uncommitted changes from installs or test runs), leave it and say why in the report's Worktree line.
 
 ## 4. Deliver
+Before delivering, check the report: every finding has `path:line`, a failure scenario and a severity from `references/review-template.md`; with `--comment`, every comment follows `references/inline-template.md`, tone included. Fix what does not match and check again; deliver only when all pass.
+If something looks wrong but no rule file or template covers it, do not report it as a rule violation. At the end, propose one new rule (which file and its wording) and add it only after the user approves.
+
 ### Without `--comment`
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
@@ -71,13 +77,12 @@ Report to the user in chat using the "Chat report" format in `references/review-
    - Without it: empty, except findings that cannot be placed on a diff line, which always go in the body.
 3. Write the payload to a temp file and post it as a single review:
    ```
-   gh api repos/{owner}/{repo}/pulls/<pr>/reviews -X POST --input <payload.json>
+   bash <skill dir>/scripts/post-review.sh <pr> <payload.json>
    ```
-   Payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "<body or empty>", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`. Leave `body` out when it is empty.
-4. If the API rejects the payload (422):
-   - Some comment positions are invalid: move those comments into the body and post again.
-   - A body is required: post again with the one-line body from the template.
-   - Never post twice successfully.
+   Payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "<body or empty>", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`. Leave `body` out when it is empty. It prints the review URL. On exit 2, tell the user why it refused and post nothing.
+4. If GitHub rejects the payload (exit 3, message on stderr):
+   - Some comment positions are invalid: move those comments into the body and run it again.
+   - A body is required: run it again with the one-line body from the template.
 5. If there are no findings: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
 6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Print the ref to branch issues from: develop-like > origin default branch > main > master (remote refs first).
 # A develop-like branch with nothing the default branch lacks is stale or unused, so it is skipped.
+# Requires: bash, git.
 set -euo pipefail
 
 GIT_TERMINAL_PROMPT=0 git fetch -q origin 2>/dev/null || true

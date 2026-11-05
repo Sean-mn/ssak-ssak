@@ -2,6 +2,7 @@
 # Create a .claude/worktrees/ssak-issue-<n> worktree per issue from the base ref, on <branch> (default ssak/issue-<n>).
 # Usage: make-worktrees.sh <issue#>[:<branch>]...
 # Output: first line "base <ref>", then one "issue <n> <branch> <path>" line per issue
+# Requires: bash, git.
 set -euo pipefail
 
 [ $# -gt 0 ] || { echo "usage: $0 <issue#>[:<branch>]..." >&2; exit 2; }

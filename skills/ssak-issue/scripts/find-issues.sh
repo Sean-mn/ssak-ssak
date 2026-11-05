@@ -4,6 +4,7 @@
 # TAKEN = an open or merged linked PR, or assigned to someone else. NOT READY = labels like blocked or needs-triage.
 # CLAIMED = a comment that looks like a claim.
 # PR links pasted in comments are not checked here; check the picked issue in full before working on it.
+# Requires: bash, gh signed in (gh auth login). No jq: JSON goes through gh --jq.
 set -euo pipefail
 . "$(dirname "$0")/common.sh"
 

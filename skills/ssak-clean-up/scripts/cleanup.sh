@@ -6,6 +6,7 @@
 #                                         re-checks each id; RISKY ids are skipped unless --force.
 #                                         --keep-branch removes only the worktree, so only the worktree is checked.
 # SAFE = removing loses nothing: no uncommitted changes and every branch commit is on a remote.
+# Requires: bash, git; gh optional (PR notes are skipped without it).
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)

@@ -1,5 +1,6 @@
 # shellcheck shell=bash disable=SC2034  # sourced: the variables are used by the scripts that source this file
 # Shared issue helpers for ssak-issue and ssak-contrib scripts (sourced, not run).
+# Requires: bash, gh signed in (gh auth login). No jq: JSON goes through gh --jq.
 
 valid_repo() { [[ "$1" =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]]; }
 

@@ -2,6 +2,7 @@
 name: ssak-herdr
 description: Open a new Claude Code pane in Herdr and hand it a task, so the main agent stays free and the user can watch or steer the new session. Also lists, reads and prompts the panes it started. Only inside a Herdr pane (HERDR_ENV=1). Use for "/ssak-herdr medium <task>", "/ssak-herdr sonnet low <task>", "/ssak-herdr list", "/ssak-herdr read <name>" or "open a new claude window in herdr and do X".
 argument-hint: "[model] <low|medium|high|xhigh|max> <task> [--name <name>] | list | read <name> | send <name> <text>"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-herdr
@@ -11,7 +12,7 @@ Arguments: `$ARGUMENTS`
 The installed `herdr` binary is the authority for syntax: if a command below fails with a usage error, check `herdr <group> --help` (never run bare `herdr`, which opens the TUI).
 
 ## 0. Prepare
-1. Run `test "${HERDR_ENV:-}" = 1`. If it fails, say this session is not inside a Herdr pane and stop. Never control a Herdr session from outside it.
+1. Run `test "${HERDR_ENV:-}" = 1`. If it fails, say this session is not inside a Herdr pane and stop. Never control a Herdr session from outside it. If `command -v herdr` fails, say Herdr is not installed and stop.
 2. Pick the mode from the first argument: `list`, `read <name>`, `send <name> <text>`, otherwise a new task. An empty argument: show the usage from `argument-hint` and stop.
 
 ## New task

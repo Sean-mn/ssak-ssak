@@ -128,6 +128,53 @@ check "release title, other version" "1" "$(t "release v0.10.1: x" 0.9.0 0.10.0)
 check "release without bump" "1" "$(t "release v0.9.0: x" 0.9.0 0.9.0)"
 check "bump outside a release" "1" "$(t "chore: release 0.10.0" 0.9.0 0.10.0)"
 
+# gh stub for the scripts that write to GitHub: answers from env, logs pr create's args
+mkdir "$tmp/bin2" && cat > "$tmp/bin2/gh" <<'EOF'
+#!/bin/sh
+case "$*" in
+  "api user"*) echo me ;;
+  "pr view"*) echo "$STUB_HEAD" ;;
+  "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
+  *"-X POST"*) echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
+  "api repos/"*) echo "$STUB_REVIEWS" ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$tmp/bin2/gh"
+stub() { PATH="$tmp/bin2:$PATH" "$@"; }
+export STUB_HEAD=abc123 STUB_REVIEWS='' STUB_LOG="$tmp/pr-create.log"
+
+echo "# post-review.sh"
+post="$skills/ssak-review/scripts/post-review.sh"
+p="$tmp/payload.json"
+pr7() { stub bash "$post" 7 "$p" 2>/dev/null; echo "$?"; }
+printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "a", "line": 1, "body": "say \\"event\\": \\"APPROVE\\""}]}' > "$p"
+check "posts a COMMENT review" "https://github.com/o/r/pull/7#pullrequestreview-1
+0" "$(pr7)"
+printf '{"commit_id": "abc123", "event": "APPROVE"}' > "$p"
+check "refuses APPROVE" "2" "$(pr7)"
+printf '{"commit_id": "abc123", "event": "COMMENT", "event": "REQUEST_CHANGES"}' > "$p"
+check "refuses two events" "2" "$(pr7)"
+printf '{"commit_id": "old", "event": "COMMENT"}' > "$p"
+check "refuses a stale head" "2" "$(pr7)"
+printf '{"commit_id": "abc123", "event": "COMMENT"}' > "$p"
+check "refuses a second review of the head" "2" "$(STUB_REVIEWS=https://x pr7)"
+
+echo "# open-pr.sh"
+openpr="$skills/ssak-contrib/scripts/open-pr.sh"
+git init -q --bare "$tmp/fork.git"
+git remote add fork "$tmp/fork.git"
+git remote add upstream https://github.com/Other/Repo.git
+git branch -q ssak/contrib-5
+echo body > "$tmp/body.md"
+op() { stub bash "$openpr" "$repo" "$1" "$2" other/repo main "a title" "$tmp/body.md" 2>/dev/null; echo "$?"; }
+check "refuses upstream" "2" "$(op upstream ssak/contrib-5)"
+check "refuses a non-contrib branch" "2" "$(op fork main)"
+check "pushes to the fork, opens a draft" "https://github.com/other/repo/pull/9
+0" "$(op fork ssak/contrib-5)"
+check "draft with fork head" "1" "$(grep -c -- '--draft --base main --head me:ssak/contrib-5' "$STUB_LOG")"
+check "branch on the fork" "$(git rev-parse ssak/contrib-5)" "$(git -C "$tmp/fork.git" rev-parse ssak/contrib-5)"
+
 echo "# claim regex (gh jq)"
 if gh auth status >/dev/null 2>&1; then
   # shellcheck source=skills/ssak-issue/scripts/common.sh

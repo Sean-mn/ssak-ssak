@@ -2,6 +2,7 @@
 name: ssak-ci-doctor
 description: Find out why CI failed on a GitHub pull request. Reads the failing checks' annotations and logs, finds the first real error of each, tells whether the PR caused it, the base branch already fails, or it is flaky or config, and suggests the fix. Read-only. Use for "/ssak-ci-doctor 42", "/ssak-ci-doctor owner/repo 42" or "why is CI failing on PR 42".
 argument-hint: "[owner/repo] [pr#]"
+# for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
 # ssak-ci-doctor
@@ -36,6 +37,7 @@ Below, `<repo>` is the given `owner/repo`, or `gh repo view --json nameWithOwner
    - **Flaky**: timeouts, network or registry errors, rate limits, runner lost or step cancelled by GitHub, and nothing in the error ties to the PR.
    - **Config**: missing secrets or permissions (common on PRs from forks), or a pinned action or tool that broke.
 3. If you cannot tell, say what you checked and that the cause is unclear. Do not guess.
+4. Before reporting, check each cause quotes an annotation or log line and fits a class in 2.2. If not, go back to step 2 for that check, or mark it unclear.
 
 ## 3. Report
 In chat, in the user's language:
