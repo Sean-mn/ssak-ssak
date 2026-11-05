@@ -17,3 +17,7 @@
 ## Looking for something to work on?
 
 Look at the [`good first issue`](https://github.com/Sean-mn/ssak-ssak/labels/good%20first%20issue) and [`help wanted`](https://github.com/Sean-mn/ssak-ssak/labels/help%20wanted) issues.
+
+## Working with an AI agent?
+
+Point it at [`AGENTS.md`](AGENTS.md). It covers the working loop and the hard rules, and links to [`docs/`](docs/) for how the skills fit together, how to write them, and how to release.
