@@ -19,6 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
+- `../ssak-herdr/references/panes.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
 
 ## Subagents
 `../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:
@@ -28,7 +29,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
-3. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then run `test "${HERDR_ENV:-}" = 1`. If that fails, say this session is not inside a Herdr pane and stop. If `command -v herdr` fails, say Herdr is not installed and stop. With one issue `--herdr` changes nothing; say so in one line.
+3. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-herdr/references/panes.md`. With one issue `--herdr` changes nothing; say so in one line.
 4. Otherwise strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -103,15 +104,13 @@ Copy this checklist into your reply and tick it as you go:
    3. Report using the "Final report" format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Herdr workers (`--herdr`)
-Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Only these steps change:
-- Step 4, launch: for each group,
-  1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md` (the first issue's number for a coupled group). That folder is git-excluded by `make-worktrees.sh`.
-  2. `herdr pane split --current --direction <right|down> --cwd "<worktree path>" --no-focus`: `right` for the first, then alternate so the panes stay usable. Read the pane ID from `.result.pane.pane_id`.
-  3. `herdr agent start issue-<num> --kind claude --pane <pane id> -- --model <model> --effort <effort> -n issue-<num>`. The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer. On `agent_not_ready`, read it with `herdr agent read issue-<num> --lines 40` and ask the user to answer the dialog in that pane.
-  4. `herdr agent prompt issue-<num> "Read <brief path> and follow it." --wait --timeout 60000`. A timeout does not mean the prompt was lost: read the pane before sending again.
-- Step 5, waiting: run `herdr agent wait issue-<num>` per worker in the background (it settles on `idle`, `done` or `blocked`), and never poll. On `blocked`, show the user the question from `herdr agent read issue-<num> --lines 40`; do not answer it. On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
-- Step 6, rework: delete the old report file, then send the "Rework request" with `herdr agent prompt issue-<num> "<request>"`, written to a file first like the brief. A worker that "Worker model and effort" put on `sonnet` gets a new pane on the session model instead (same effort, or one level up if it was picked, not given, at most `xhigh`), with the previous report in its brief; a model the user gave stays.
-- Step 7, before removing worktrees: close each pane this run started with `herdr pane close <pane id>`, since a session still sitting in a worktree keeps it from being removed. Delete the brief and report files after the final report.
+Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-herdr/references/panes.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
+- Step 4, launch: lay out every group's pane at once, as in "When the number of panes is known", each with its worktree path as `--cwd`. New tabs are labelled `ssak-issue-<n>`. Then for each group:
+  1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`. That folder is git-excluded by `make-worktrees.sh`.
+  2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer.
+- Step 5, waiting: wait on each worker as in "Watching". On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
+- Step 6, rework: delete the old report file, then send the "Rework request" as a prompt, written to a file first like the brief. A worker that "Worker model and effort" put on `sonnet` gets a new session on the session model instead (same effort, or one level up if it was picked, not given, at most `xhigh`), with the previous report in its brief, in a pane that replaces the old one ("Replacing a pane"); a model the user gave stays.
+- Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. Delete the brief and report files after the final report.
 
 ## Rules
 - Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
