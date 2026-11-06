@@ -11,7 +11,7 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 ## Chat report
 ```
 ## PR #<num> review: <title>
-<url> · effort: <level> · base: <base> · head: <short sha>
+<url> · effort: <level, or "high (raised from medium: <signal>)"> · base: <base> · head: <short sha>
 
 **Verdict**: <one line: e.g. "2 issues must be fixed before merge" / "No blocking issues">
 
@@ -50,7 +50,7 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 
 ## Reviewer brief (ssak-reviewer, two or more PRs)
 ```
-Review PR #<num> at effort <level>.
+Review PR #<num> at effort <level, or "high (raised from medium: <signal>)">.
 - worktree: <worktree path> at head <head sha>  (already checked out; do all reads and commands inside it)
 - skill dir: <ssak-review skill dir>
 - report language: <the user's language>
@@ -61,11 +61,11 @@ Answer in your defined report format.
 ## Multi-PR report
 Shown first when two or more PRs were reviewed, followed by each PR's "Chat report" in PR number order. Leave out the Posted column without `--comment`.
 ```
-## ssak-review: <n> PRs · effort: <level>
+## ssak-review: <n> PRs · effort: <level, or "auto" when none was given>
 
-| PR | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
-|---|---|---|---|---|---|---|---|
-| #<num> <title> | <reviewer model, e.g. sonnet, opus> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
+| PR | Effort | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
+|---|---|---|---|---|---|---|---|---|
+| #<num> <title> | <level, "high (raised: <signal>)" when raised> | <reviewer model, e.g. sonnet, opus> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
 
 <Not reviewed: #<num>: <reason>. Omit when every PR was reviewed.>
 ```

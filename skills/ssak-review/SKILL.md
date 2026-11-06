@@ -24,19 +24,25 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - If one is not registered, read its file above and pass its instructions with the brief to a general-purpose subagent.
 
 ## 0. Parse arguments
-- Effort: `low`, `medium`, `high` or `xhigh`; `middle` means `medium`. Default `medium` when omitted.
+- Effort: `low`, `medium`, `high` or `xhigh`; `middle` means `medium`. A given effort is always used as is. When omitted, each PR starts at `medium` and step 1.5 may raise it to `high`; never pick `low` or `xhigh` on your own.
 - PR numbers: one or more positive integers, each with an optional leading `#` stripped (`#42` → `42`). At least one is required. Drop duplicates.
 - `--comment`: post findings as inline PR comments. Without it, nothing is posted to GitHub.
 - `--summary`: with `--comment`, also post the summary review body (verdict, severity counts, checks). Off by default. Without `--comment` it has no effect; say so in the report.
 - Anything else, or no PR number: stop and show the usage `/ssak-review [low|medium|high|xhigh] <pr#> [pr#...] [--comment] [--summary]`.
 - Check `gh auth status` passes and the current directory is a git repo of the PRs' repository. If not, say why and stop.
-- With one PR, continue with steps 1 to 4. With two or more, go to "Two or more PRs" below; the effort and flags apply to every PR.
+- With one PR, continue with steps 1 to 4. With two or more, go to "Two or more PRs" below; a given effort and the flags apply to every PR.
 
 ## 1. Gather
 1. `gh pr view <pr> --json number,title,body,author,baseRefName,headRefName,headRefOid,files,additions,deletions,url` for the PR's intent and scope.
 2. `gh pr diff <pr>` is the review scope. Findings must point at code this PR adds or changes, or at existing code the change now breaks.
 3. `bash <skill dir>/scripts/pr-worktree.sh <pr>` to get the PR head on disk for reading context and running lint. Do all reads and commands for the PR inside that worktree, never in the main checkout. Install dependencies from the lockfile if lint or tests need them.
 4. Team rules: read whichever exist in the worktree: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE*`, `.editorconfig`, lint and formatter configs. A rule violation is a finding only if a rule file actually states it; cite the file.
+5. Effort, only when the user gave none: raise `medium` to `high` if any of these holds, from 1.1 and 1.2:
+   - The PR touches migrations or schema, auth, permissions or sessions, payment, secret handling, deploy or infra, or env vars and config that the build or deploy reads.
+   - The diff adds or changes locking, threads, async queues or other shared state between concurrent code.
+   - `additions + deletions` is over 500.
+
+   Otherwise keep `medium`. When raised, the report's effort reads `high (raised from medium: <signal>)`.
 
 ## 2. Review by effort
 
@@ -95,8 +101,9 @@ Report to the user in chat using the "Chat report" format in `references/review-
 
 ## Two or more PRs: one reviewer per PR, then report together
 1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR, one at a time: concurrent runs share `FETCH_HEAD` and can check out another PR's head. Keep each `<head sha> <worktree path>`.
-   - Pick each reviewer's model. `sonnet` at `low` or `medium` when `gh pr view <pr> --json files` shows no auth, payment, migration, deploy or infra, or secret-handling files. Otherwise no model, so the reviewer runs on the session model. Never pass a model stronger than the session's. Skip this when the subagent tool has no model option.
-2. Launch one `ssak-reviewer` per PR on its model, all in parallel, with the "Reviewer brief" from `references/review-template.md`. The worktrees already exist, so do not use the subagent tool's workspace isolation option. Handle each PR independently: a reviewer that fails or returns no report ends that PR as not reviewed, with the reason.
+   - With no effort given, set each PR's effort as in step 1.5, from `gh pr view <pr> --json files,additions,deletions` and `gh pr diff <pr>`. PRs can end up at different efforts.
+   - Pick each reviewer's model from its PR's effort. `sonnet` at `low` or `medium` when `gh pr view <pr> --json files` shows no auth, payment, migration, deploy or infra, or secret-handling files. Otherwise no model, so the reviewer runs on the session model. Never pass a model stronger than the session's. Skip this when the subagent tool has no model option.
+2. Launch one `ssak-reviewer` per PR on its model, all in parallel, with the "Reviewer brief" from `references/review-template.md` and that PR's effort, including the raised reason if any. The worktrees already exist, so do not use the subagent tool's workspace isolation option. Handle each PR independently: a reviewer that fails or returns no report ends that PR as not reviewed, with the reason.
 3. At `xhigh`, as soon as a reviewer returns, launch one fresh `ssak-refuter` per Critical or High finding in its report, in parallel, with only the finding (file:line, claim, failure scenario) and that PR's worktree path. Do not wait for the other reviewers. Drop each `DISPROVED` finding from its PR's chat report, inline comments, counts and verdict. Reviewers cannot launch subagents, so the main agent does this.
 4. Remove all review worktrees in one call, as in step 3: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`. Fill in each chat report's Worktree line from its output.
 5. Deliver:
