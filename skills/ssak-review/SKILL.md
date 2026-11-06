@@ -47,6 +47,13 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 | high | Also config, migrations, call sites across the repo, and related tests | Also the tests related to the change | All, including Low |
 | xhigh | Same as high | Also the full test suite | All, and each Critical or High finding is checked by an independent subagent |
 
+The table is the most to run, not a must. Run a command only if its result could change the review:
+- **Tests and build**: run them only when the diff can change what the code does at runtime. Skip them when it cannot, e.g. docs, comments, renames of private names the type check covers, formatting, test-only changes the CI ran, CI or editor config that does not feed the build, version bumps of dependencies whose changelog shows no breaking change.
+- **CI already ran it**: check `gh pr checks <pr>`. Do not rerun a lint, build or test that a passing check on the PR head already covers; cite the check instead. If it failed, read its log rather than rerunning.
+- When nothing is left to run, install nothing.
+
+In the report, say what you skipped and why.
+
 At every level, look in this order:
 1. **Production impact**: data loss or corruption, security (injection, auth bypass, secret exposure), outages and crashes, missing error handling on external calls, breaking changes to APIs, schemas, migrations, env vars or config, performance regressions on hot paths, concurrency and race conditions, irreversible operations without a guard.
 2. **Correctness of the change**: does the code do what the PR says, edge cases, regressions in touched behavior.
