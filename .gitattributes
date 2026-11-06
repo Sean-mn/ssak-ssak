@@ -1,1 +1,4 @@
+# Keep every text file LF, in the repo and in the working tree, so Windows
+# tools and Git for Windows do not check files out as CRLF.
+* text=auto eol=lf
 *.sh text eol=lf
