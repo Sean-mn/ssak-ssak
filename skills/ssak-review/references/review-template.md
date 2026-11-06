@@ -38,9 +38,9 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 ...
 
 ### Checks
-- Lint: <command> → <pass / n errors on changed lines>
-- Build / type check: <command> → <result, or "not run at this effort">
-- Tests: <command> → <result, or "not run at this effort">
+- Lint: <command> → <pass / n errors on changed lines, or "skipped: <reason>">
+- Build / type check: <command> → <result, "not run at this effort", or "skipped: <reason>">
+- Tests: <command> → <result, "not run at this effort", or "skipped: <reason>">
 - Team rules checked: <files read, or "none found">
 - Pre-existing: <lint errors on lines the PR did not change, or "none">
 
