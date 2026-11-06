@@ -43,7 +43,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 | Effort | Context read | Commands run | Severities reported |
 |---|---|---|---|
 | low | The diff only | Lint on changed files | Critical, High |
-| medium | Diff plus the full changed functions and their direct callers | Lint, type check or build | Critical, High, Medium |
+| medium | Diff plus the full changed functions and their direct callers | Lint, type check or build | All, including Low |
 | high | Also config, migrations, call sites across the repo, and related tests | Also the tests related to the change | All, including Low |
 | xhigh | Same as high | Also the full test suite | All, and each Critical or High finding is checked by an independent subagent |
 
