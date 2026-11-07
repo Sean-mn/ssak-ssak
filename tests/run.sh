@@ -92,6 +92,8 @@ bash "$skills/ssak-issue/scripts/make-worktrees.sh" 5:bad..name >/dev/null 2>&1
 check "rejects bad branch name" "2" "$?"
 check "keep-branch keeps named branch" "removed issue-4 worktree (kept branch)
 feat/4-x" "$(offline bash "$cleanup" remove --keep-branch issue-4; git branch --list --format='%(refname:short)' feat/4-x)"
+check "scans kept named branch" "issue-4 SAFE wt=- branch=feat/4-x | nothing to lose" "$(offline bash "$cleanup" scan)"
+check "removes kept named branch" "removed issue-4" "$(offline bash "$cleanup" remove issue-4)"
 
 echo "# base-branch.sh, develop-like"
 git branch -q develop
@@ -128,14 +130,20 @@ check "release title, other version" "1" "$(t "release v0.10.1: x" 0.9.0 0.10.0)
 check "release without bump" "1" "$(t "release v0.9.0: x" 0.9.0 0.9.0)"
 check "bump outside a release" "1" "$(t "chore: release 0.10.0" 0.9.0 0.10.0)"
 
-# gh stub for the scripts that write to GitHub: answers from env, logs pr create's args
+# gh stub for the scripts that talk to GitHub: answers from env, logs pr create's args
 mkdir "$tmp/bin2" && cat > "$tmp/bin2/gh" <<'EOF'
 #!/bin/sh
 case "$*" in
   "api user"*) echo me ;;
+  "repo view me/"*) echo "${STUB_PARENT:-other/repo}" ;;
+  "repo view"*) echo "${STUB_DEFAULT_BRANCH:-main}" ;;
+  "repo set-default"*) ;;
+  "label list"*) printf '%s' "${STUB_LABELS:-}" ;;
   "pr view"*) echo "$STUB_HEAD" ;;
   "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
   *"-X POST"*) echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
+  "api repos/other/repo/contents/"*".md"*) echo "rule text" ;;
+  "api repos/other/repo/contents/"*) printf '%s\n' "${STUB_CONTENTS:-}" ;;
   "api repos/"*) echo "$STUB_REVIEWS" ;;
   *) exit 1 ;;
 esac
@@ -162,9 +170,10 @@ check "refuses a second review of the head" "2" "$(STUB_REVIEWS=https://x pr7)"
 
 echo "# open-pr.sh"
 openpr="$skills/ssak-contrib/scripts/open-pr.sh"
-git init -q --bare "$tmp/fork.git"
-git remote add fork "$tmp/fork.git"
-git remote add upstream https://github.com/Other/Repo.git
+git init -q --bare "$tmp/me/repo.git"
+git clone -q --bare "$tmp/origin.git" "$tmp/other/repo.git" 2>/dev/null
+git remote add fork "$tmp/me/repo.git"
+git remote add upstream "$tmp/other/repo.git"
 git branch -q ssak/contrib-5
 echo body > "$tmp/body.md"
 op() { stub bash "$openpr" "$repo" "$1" "$2" other/repo main "a title" "$tmp/body.md" 2>/dev/null; echo "$?"; }
@@ -173,7 +182,45 @@ check "refuses a non-contrib branch" "2" "$(op fork main)"
 check "pushes to the fork, opens a draft" "https://github.com/other/repo/pull/9
 0" "$(op fork ssak/contrib-5)"
 check "draft with fork head" "1" "$(grep -c -- '--draft --base main --head me:ssak/contrib-5' "$STUB_LOG")"
-check "branch on the fork" "$(git rev-parse ssak/contrib-5)" "$(git -C "$tmp/fork.git" rev-parse ssak/contrib-5)"
+check "branch on the fork" "$(git rev-parse ssak/contrib-5)" "$(git -C "$tmp/me/repo.git" rev-parse ssak/contrib-5)"
+
+echo "# setup-fork.sh"
+setupfork="$skills/ssak-contrib/scripts/setup-fork.sh"
+bash "$setupfork" bad 1 >/dev/null 2>&1
+check "setup-fork rejects bad repo" "2" "$?"
+bash "$setupfork" other/repo abc >/dev/null 2>&1
+check "setup-fork rejects bad issue" "2" "$?"
+check "setup-fork reuses clone and creates branch" "fork me/repo
+push-remote fork
+base upstream/main
+path $root
+branch ssak/contrib-8" "$(stub bash "$setupfork" other/repo 8 main)"
+echo dirty > "$repo/dirty"
+stub bash "$setupfork" other/repo 8 main >/dev/null 2>&1
+check "setup-fork exits 3 on dirty clone" "3" "$?"
+rm -f "$repo/dirty" && git switch -q main
+
+echo "# guidelines.sh, find-issues.sh, issue-status.sh"
+guidelines="$skills/ssak-contrib/scripts/guidelines.sh"
+findissues="$skills/ssak-issue/scripts/find-issues.sh"
+issuestatus="$skills/ssak-contrib/scripts/issue-status.sh"
+bash "$guidelines" bad >/dev/null 2>&1
+check "guidelines rejects bad repo" "2" "$?"
+check "guidelines extracts rules and changeset note" "===== note =====
+.changeset/ directory exists: changesets are likely required.
+
+===== CONTRIBUTING.md =====
+rule text" "$(STUB_CONTENTS="$(printf 'dir .changeset .changeset\nfile CONTRIBUTING.md CONTRIBUTING.md\nfile README.md README.md')" stub bash "$guidelines" other/repo)"
+bash "$findissues" bad >/dev/null 2>&1
+check "find-issues rejects bad repo" "2" "$?"
+bash "$findissues" other/repo --bad >/dev/null 2>&1
+check "find-issues rejects bad flag" "2" "$?"
+check "find-issues beginner with no labels" "no beginner labels (good first issue, help wanted, ...) in other/repo" \
+  "$(STUB_LABELS='' stub bash "$findissues" other/repo --beginner)"
+bash "$issuestatus" bad 1 >/dev/null 2>&1
+check "issue-status rejects bad repo" "2" "$?"
+bash "$issuestatus" other/repo 0 >/dev/null 2>&1
+check "issue-status rejects bad issue" "2" "$?"
 
 echo "# claim regex (gh jq)"
 if gh auth status >/dev/null 2>&1; then

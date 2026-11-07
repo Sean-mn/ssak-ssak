@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Find and remove what ssak skills leave in this repo: .claude/worktrees/ssak-{issue,review}-<n> worktrees
-# and ssak/{issue,contrib}-<n> branches. Remote branches and PRs are never touched.
+# and ssak/{issue,contrib}-<n> (or make-worktrees.sh custom) branches. Remote branches and PRs are never touched.
 #   cleanup.sh scan                       one line per id: "<id> <SAFE|RISKY> wt=<path|-> branch=<name|-> | <notes>"
 #   cleanup.sh remove [--force] [--keep-branch] <id>...
 #                                         re-checks each id; RISKY ids are skipped unless --force.
@@ -15,15 +15,34 @@ wtdir="$root/.claude/worktrees"
 ids() {
   # Prefix match with awk, not a regex: the repo path may contain regex characters such as "(x86)"
   { git worktree list --porcelain | awk -v p="worktree $wtdir/ssak-" 'index($0, p) == 1 { print substr($0, length(p) + 1) }' |
-      grep -E '^(issue|review)-[1-9][0-9]*$'
+      grep -E '^(issue|review)-[1-9][0-9]*$' || true
     git for-each-ref --format='%(refname:short)' refs/heads/ssak/ | sed -n 's#^ssak/##p' |
-      grep -E '^(issue|contrib)-[1-9][0-9]*$'
+      grep -E '^(issue|contrib)-[1-9][0-9]*$' || true
+    git config --get-regexp '^branch\..*\.ssak$' '^issue-[1-9][0-9]*$' 2>/dev/null |
+      while read -r k v; do
+        b=${k#branch.}; b=${b%.ssak}
+        git show-ref -q --verify "refs/heads/$b" && echo "$v"
+      done || true
   } | sort -u
+}
+
+branch_for() {  # local branch name for <kind>-<n>, if it exists
+  if git show-ref -q --verify "refs/heads/ssak/$1"; then echo "ssak/$1"; return 0; fi
+  if [ "$wt" != - ] && [ -d "$wt" ]; then
+    local wb
+    wb=$(git -C "$wt" branch --show-current)
+    if [ -n "$wb" ]; then echo "$wb"; return 0; fi
+  fi
+  git config --get-regexp '^branch\..*\.ssak$' "^$1$" 2>/dev/null |
+    while read -r k _; do
+      local b=${k#branch.}; b=${b%.ssak}
+      if git show-ref -q --verify "refs/heads/$b"; then echo "$b"; return 0; fi
+    done || true
 }
 
 # Sets wt, branch, risky, notes for one id. With a second arg "wt-only", the branch is ignored.
 check() {
-  local kind=${1%-*} n=${1##*-} only=${2:-} out
+  local kind=${1%-*} n=${1##*-} only=${2:-} out b
   wt=-; branch=-; risky=0; notes=()
 
   if [ "$kind" != contrib ] && git worktree list --porcelain | grep -qxF "worktree $wtdir/ssak-$kind-$n"; then
@@ -35,18 +54,21 @@ check() {
     fi
   fi
 
-  if [ "$kind" != review ] && [ "$only" != wt-only ] && git show-ref -q --verify "refs/heads/ssak/$kind-$n"; then
-    branch="ssak/$kind-$n"
-    local at local_only pr
-    at=$(git worktree list --porcelain | awk -v b="branch refs/heads/$branch" '/^worktree /{w=substr($0, 10)} $0==b{print w}')
-    if [ -n "$at" ] && [ "$at" != "$wt" ]; then
-      risky=1; notes+=("branch is checked out in $at")
-      [ -z "$(git -C "$at" status --porcelain 2>/dev/null)" ] || notes+=("uncommitted changes in $at")
+  if [ "$kind" != review ] && [ "$only" != wt-only ]; then
+    b=$(branch_for "$kind-$n")
+    if [ -n "$b" ]; then
+      branch=$b
+      local at local_only pr
+      at=$(git worktree list --porcelain | awk -v b="branch refs/heads/$branch" '/^worktree /{w=substr($0, 10)} $0==b{print w}')
+      if [ -n "$at" ] && [ "$at" != "$wt" ]; then
+        risky=1; notes+=("branch is checked out in $at")
+        [ -z "$(git -C "$at" status --porcelain 2>/dev/null)" ] || notes+=("uncommitted changes in $at")
+      fi
+      local_only=$(git rev-list --count "$branch" --not --remotes)
+      [ "$local_only" = 0 ] || { risky=1; notes+=("$local_only commit(s) not on any remote"); }
+      pr=$(gh pr list --head "$branch" --author @me --state all --json number,state -q '.[0] | select(.) | "PR #\(.number) \(.state)"' 2>/dev/null || true)
+      [ -z "$pr" ] || notes+=("$pr")
     fi
-    local_only=$(git rev-list --count "$branch" --not --remotes)
-    [ "$local_only" = 0 ] || { risky=1; notes+=("$local_only commit(s) not on any remote"); }
-    pr=$(gh pr list --head "$branch" --author @me --state all --json number,state -q '.[0] | select(.) | "PR #\(.number) \(.state)"' 2>/dev/null || true)
-    [ -z "$pr" ] || notes+=("$pr")
   fi
 }
 
