@@ -193,7 +193,7 @@ check "setup-fork rejects bad issue" "2" "$?"
 check "setup-fork reuses clone and creates branch" "fork me/repo
 push-remote fork
 base upstream/main
-path $repo
+path $root
 branch ssak/contrib-8" "$(stub bash "$setupfork" other/repo 8 main)"
 echo dirty > "$repo/dirty"
 stub bash "$setupfork" other/repo 8 main >/dev/null 2>&1
