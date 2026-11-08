@@ -64,8 +64,19 @@ Small work does not need the session's model. When grouping issues, pick each gr
 - The effort column applies only with `--herdr` and no effort given. Never pick `max`; only the user can.
 - "Ask the user": before launching, ask once for every such group together, naming each issue and why it was unclear. Launch the other groups meanwhile.
 
+## Dependencies
+Find what each issue waits on, after reading it:
+- GitHub's "blocked by" links: `gh api "repos/<owner/repo>/issues/<num>/dependencies/blocked_by" --jq '.[] | "\(.number) \(.state)"'`. An error (e.g. GitHub Enterprise without the feature) means none.
+- The issue text and comments: "depends on #N", "blocked by #N", "after #N", "requires #N" and the like.
+
+Then, before any worktree is made:
+- A closed dependency needs nothing.
+- A dependency in this run: put both issues in one coupled group, the dependency first (see step 3 of "Two or more issues").
+- An open dependency outside this run: ask the user once, naming every such issue and what it waits on, whether to add the dependency to the run, skip the waiting issue, or go ahead anyway. Start nothing for those issues until they answer.
+- A cycle: name it and ask the user which order to take.
+
 ## One issue: the main agent works directly
-1. Read it with `gh issue view <num> --comments`.
+1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues".
 2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
@@ -77,7 +88,7 @@ Small work does not need the session's model. When grouping issues, pick each gr
 ## Two or more issues: work, verify, report
 Copy this checklist into your reply and tick it as you go:
 ```
-- [ ] 1. Read issues, name branches, run make-worktrees.sh
+- [ ] 1. Read issues, check dependencies, name branches, run make-worktrees.sh
 - [ ] 2. Scout issues that do not name their files
 - [ ] 3. Group coupled issues, pick models, tell the user
 - [ ] 4. Launch one worker per group (subagent or Herdr pane)
@@ -86,10 +97,10 @@ Copy this checklist into your reply and tick it as you go:
 - [ ] 7. Check overlaps, remove worktrees with cleanup.sh --keep-branch, final report
 ```
 
-1. Read every issue with `gh issue view <num> --comments`, pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
+1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
-3. Group coupled issues, using the scout maps where you have them: one needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model and, with `--herdr` and no effort given, its effort (see "Worker model and effort"). Tell the user the coupled groups and each group's model (and effort, with `--herdr`) in one line before starting.
-4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group on its model, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
+3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model and, with `--herdr` and no effort given, its effort (see "Worker model and effort"). Tell the user the coupled groups and each group's model (and effort, with `--herdr`) in one line before starting.
+4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group on its model, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
 5. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.

@@ -47,7 +47,8 @@ touch the main checkout.
 
 ## Flows
 
-**ssak-issue**, two or more issues: scout each issue → group coupled issues → one
+**ssak-issue**, two or more issues: check dependencies ("blocked by" links, "depends on
+#N") → scout each issue → group coupled and dependent issues → one
 worker per group in parallel → a fresh verifier per issue → up to 2 reworks on FAIL →
 final report → remove worktrees, keep branches. With one issue the main agent does the
 work itself and still runs a verifier. With `--herdr`, workers run as Claude Code panes
