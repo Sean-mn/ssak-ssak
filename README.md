@@ -36,6 +36,7 @@ Update with `codex plugin marketplace upgrade`.
 | Command | What it does |
 |---|---|
 | `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues, each checked by a verifier agent. Two or more run in parallel worktrees; a scout agent first maps the files each issue touches so overlapping issues go to one worker. |
+| `/ssak-issue <issue#>... --pr` | Same, then shows a PR draft for each issue that passed verification and opens them as draft PRs after you approve. |
 | `/ssak-issue --find` | Lists open issues nobody has taken yet. |
 | `/ssak-issue <issue#> <issue#>... --herdr [model] [effort]` | Same, but each worker runs as its own Claude Code pane in Herdr, so you can watch and steer it. Without an effort, the main agent picks one per issue from how hard it looks. |
 | `/ssak-herdr [model] [effort] <task>` | Opens a new Claude Code pane in Herdr and hands it the task. Without a model or effort it uses the main pane's. `list`, `read <name>` and `send <name> <text>` check on it. Needs Herdr. |

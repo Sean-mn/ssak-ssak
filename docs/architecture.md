@@ -49,7 +49,8 @@ touch the main checkout.
 
 **ssak-issue**, two or more issues: scout each issue → group coupled issues → one
 worker per group in parallel → a fresh verifier per issue → up to 2 reworks on FAIL →
-final report → remove worktrees, keep branches. With one issue the main agent does the
+remove worktrees, keep branches → with `--pr`, PR drafts, user confirms → `open-pr.sh`
+opens a draft PR per PASS issue → final report. With one issue the main agent does the
 work itself and still runs a verifier. With `--herdr`, workers run as Claude Code panes
 in Herdr instead of subagents; verifiers stay subagents.
 
@@ -78,7 +79,9 @@ them:
 
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
   once per head.
-- `open-pr.sh` pushes only to the fork, never force-pushes, and always opens a draft.
+- `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to
+  the repo itself and never as its base or default branch. It never force-pushes and
+  always opens a draft.
 - `cleanup.sh` re-checks every id before removing it and skips RISKY items unless
   `--force`.
 - `make-worktrees.sh` is the only way ssak-issue creates worktrees, so branch names

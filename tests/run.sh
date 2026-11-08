@@ -133,6 +133,7 @@ mkdir "$tmp/bin2" && cat > "$tmp/bin2/gh" <<'EOF'
 #!/bin/sh
 case "$*" in
   "api user"*) echo me ;;
+  "repo view"*) echo main ;;
   "pr view"*) echo "$STUB_HEAD" ;;
   "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
   *"-X POST"*) echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
@@ -174,6 +175,16 @@ check "pushes to the fork, opens a draft" "https://github.com/other/repo/pull/9
 0" "$(op fork ssak/contrib-5)"
 check "draft with fork head" "1" "$(grep -c -- '--draft --base main --head me:ssak/contrib-5' "$STUB_LOG")"
 check "branch on the fork" "$(git rev-parse ssak/contrib-5)" "$(git -C "$tmp/fork.git" rev-parse ssak/contrib-5)"
+git init -q --bare "$tmp/other/repo.git"
+git remote add same "$tmp/other/repo.git"
+git branch -q feat/x
+check "issue branch: refuses another repo's remote" "2" "$(op fork feat/x)"
+check "issue branch: refuses the default branch" "2" "$(op same main)"
+check "issue branch: refuses a missing branch" "2" "$(op same feat/none)"
+check "issue branch: pushes to the repo, opens a draft" "https://github.com/other/repo/pull/9
+0" "$(op same feat/x)"
+check "draft with same-repo head" "1" "$(grep -c -- '--draft --base main --head feat/x ' "$STUB_LOG")"
+check "issue branch on the repo" "$(git rev-parse feat/x)" "$(git -C "$tmp/other/repo.git" rev-parse feat/x)"
 
 echo "# claim regex (gh jq)"
 if gh auth status >/dev/null 2>&1; then
