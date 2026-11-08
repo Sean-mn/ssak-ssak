@@ -19,7 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
-- `../ssak-herdr/references/panes.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
+- `../ssak-orchestrate/references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
 
 ## Subagents
 `../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:
@@ -29,7 +29,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
-3. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-herdr/references/panes.md`. With one issue `--herdr` changes nothing; say so in one line.
+3. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-orchestrate/references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
 4. Otherwise strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -104,7 +104,7 @@ Copy this checklist into your reply and tick it as you go:
    3. Report using the "Final report" format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Herdr workers (`--herdr`)
-Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-herdr/references/panes.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
+Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-orchestrate/references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
 - Step 4, launch: lay out every group's pane at once, as in "When the number of panes is known", each with its worktree path as `--cwd`. New tabs are labelled `ssak-issue-<n>`. Then for each group:
   1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`. That folder is git-excluded by `make-worktrees.sh`.
   2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer.

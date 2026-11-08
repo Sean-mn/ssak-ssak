@@ -64,7 +64,7 @@ PR draft, user confirms → `open-pr.sh` opens a draft PR.
 **ssak-ci-doctor**: read-only. Failing checks → annotations and logs → first real error
 of each → PR-caused, base already failing, flaky or config → suggested fix.
 
-**ssak-herdr**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
+**ssak-orchestrate**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
 there with the given model and effort, hands it the task; `list`, `read` and `send`
 check on it.
 
