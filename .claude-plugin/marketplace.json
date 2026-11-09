@@ -7,7 +7,7 @@
     {
       "name": "ssak-ssak",
       "source": "./",
-      "description": "Personal Claude Code harness"
+      "description": "Personal AI Agents harness: skills and subagents"
     }
   ]
 }

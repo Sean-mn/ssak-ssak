@@ -57,6 +57,28 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 <full verifier report>
 ```
 
+## PR body (`--pr`, only when the repo has no PR template)
+```
+<what the PR changes and why, 2-4 sentences>
+
+Closes #<num>
+
+## Testing
+<the commands the verifier ran and their results>
+```
+
+## PR draft (`--pr`, to the user, before pushing)
+```
+## PR draft for #<num>
+**Title**: <title>
+**Base**: <base>  ←  **Head**: <branch>  (opened as a draft)
+
+<body>
+
+**Commits**: <hash subject>, one per line
+**Verification**: PASS after <k> reworks
+```
+
 ## Final report (main agent to user)
 ```
 ## ssak-issue result (base: <base>)
@@ -71,7 +93,7 @@ Verification FAILED (rework <k>/2). Fix the FAIL reasons in the verifier report 
 - Stacked: <#<num> on #<num>: merge the earlier one first, or open its PR with --base <earlier branch>. "none" if none>
 
 ### Next steps
-- push and PR: git push -u origin <branch> && gh pr create --base <base branch name> --head <branch> --fill
+- PRs: <with --pr: #<num> <PR URL>, one per line, and the issues that got none and why / without --pr: git push -u origin <branch> && gh pr create --base <base branch name> --head <branch> --fill>
 - worktrees: <removed, branches kept / kept: <ids and why>>
 - delete the branches once pushed or merged: /ssak-clean-up for `ssak/*` branches, `git branch -d <branch>` for others
 ```

@@ -47,9 +47,11 @@ touch the main checkout.
 
 ## Flows
 
-**ssak-issue**, two or more issues: scout each issue → group coupled issues → one
+**ssak-issue**, two or more issues: check dependencies ("blocked by" links, "depends on
+#N") → scout each issue → group coupled and dependent issues → one
 worker per group in parallel → a fresh verifier per issue → up to 2 reworks on FAIL →
-final report → remove worktrees, keep branches. With one issue the main agent does the
+remove worktrees, keep branches → with `--pr`, PR drafts, user confirms → `open-pr.sh`
+opens a draft PR per PASS issue → final report. With one issue the main agent does the
 work itself and still runs a verifier. With `--herdr`, workers run as Claude Code panes
 in Herdr instead of subagents; verifiers stay subagents.
 
@@ -61,8 +63,9 @@ report, or inline comments through `post-review.sh` with `--comment` → cleanup
 summary, user confirms → `setup-fork.sh` → implement → verifier with the repo's rules →
 PR draft, user confirms → `open-pr.sh` opens a draft PR.
 
-**ssak-ci-doctor**: read-only. Failing checks → annotations and logs → first real error
-of each → PR-caused, base already failing, flaky or config → suggested fix.
+**ssak-ci-doctor**: failing checks → annotations and logs → first real error of each →
+PR-caused, base already failing, flaky or config → suggested fix → for PR causes, user
+confirms → fix and a local commit on the PR branch (never pushed).
 
 **ssak-orchestrate**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
 there with the given model and effort, hands it the task; `list`, `read` and `send`
@@ -78,7 +81,9 @@ them:
 
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
   once per head.
-- `open-pr.sh` pushes only to the fork, never force-pushes, and always opens a draft.
+- `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to
+  the repo itself and never as its base or default branch. It never force-pushes and
+  always opens a draft.
 - `cleanup.sh` re-checks every id before removing it and skips RISKY items unless
   `--force`.
 - `make-worktrees.sh` is the only way ssak-issue creates worktrees, so branch names
