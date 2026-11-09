@@ -1,6 +1,6 @@
 # Herdr panes
 
-How the ssak skills open, lay out, prompt and close Claude Code panes in Herdr. Used by `ssak-herdr` and `ssak-issue --herdr`; each skill says what it names the agents and what it hands them.
+How the ssak skills open, lay out, prompt and close Claude Code panes in Herdr. Used by `ssak-orchestrate` and `ssak-issue --herdr`; each skill says what it names the agents and what it hands them.
 
 ## Before anything
 - Run `test "${HERDR_ENV:-}" = 1`. If it fails, say this session is not inside a Herdr pane and stop. Never control a Herdr session from outside it. If `command -v herdr` fails, say Herdr is not installed and stop.

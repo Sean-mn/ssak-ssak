@@ -67,7 +67,7 @@ PR draft, user confirms → `open-pr.sh` opens a draft PR.
 PR-caused, base already failing, flaky or config → suggested fix → for PR causes, user
 confirms → fix and a local commit on the PR branch (never pushed).
 
-**ssak-herdr**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
+**ssak-orchestrate**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
 there with the given model and effort, hands it the task; `list`, `read` and `send`
 check on it.
 

@@ -7,4 +7,4 @@ graders:
   - name: fires
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-herdr"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-orchestrate"'
