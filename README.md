@@ -35,13 +35,13 @@ Update with `codex plugin marketplace upgrade`.
 
 | Command | What it does |
 |---|---|
-| `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues, each checked by a verifier agent. Two or more run in parallel worktrees; a scout agent first maps the files each issue touches so overlapping issues go to one worker. |
+| `/ssak-issue <issue#> [issue#...]` | Works on GitHub issues, each checked by a verifier agent. Two or more run in parallel worktrees; a scout agent first maps the files each issue touches so overlapping issues go to one worker. Issues that depend on each other (GitHub "blocked by" links or "depends on #N") run in order on stacked branches; an open dependency outside the run is asked about first. |
 | `/ssak-issue <issue#>... --pr` | Same, then shows a PR draft for each issue that passed verification and opens them as draft PRs after you approve. |
 | `/ssak-issue --find` | Lists open issues nobody has taken yet. |
 | `/ssak-issue <issue#> <issue#>... --herdr [model] [effort]` | Same, but each worker runs as its own Claude Code pane in Herdr, so you can watch and steer it. Without an effort, the main agent picks one per issue from how hard it looks. |
 | `/ssak-herdr [model] [effort] <task>` | Opens a new Claude Code pane in Herdr and hands it the task. Without a model or effort it uses the main pane's. `list`, `read <name>` and `send <name> <text>` check on it. Needs Herdr. |
 | `/ssak-review [low\|medium\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | Reviews PRs for production impact, lint and team rules. With no effort given, starts at medium and moves to high for risky PRs (migrations, auth, infra, large diffs). Two or more are reviewed in parallel, one reviewer agent per PR. `--comment` posts inline comments. |
-| `/ssak-ci-doctor [owner/repo] [pr#]` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Without a number, uses the PR you just worked on or the current branch's. Read-only. |
+| `/ssak-ci-doctor [owner/repo] [pr#]` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Without a number, uses the PR you just worked on or the current branch's. When the PR caused it and you approve, fixes it with a local commit on the PR branch; it never pushes. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |
 | `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
 | `/ssak-clean-up [id...]` | Removes worktrees and branches the skills left behind. Asks first. |
