@@ -21,7 +21,8 @@ mkdir -p "$info"
 grep -qxF '.claude/worktrees/' "$info/exclude" 2>/dev/null || echo '.claude/worktrees/' >> "$info/exclude"
 
 echo "base $base"
-for a in $(printf '%s\n' "$@" | sort -un); do
+while IFS= read -r a; do
+  [ -n "$a" ] || continue
   n=${a%%:*}
   if [[ "$a" == *:* ]]; then branch=${a#*:}; else branch="ssak/issue-$n"; fi
   path="$root/.claude/worktrees/ssak-issue-$n"
@@ -32,5 +33,6 @@ for a in $(printf '%s\n' "$@" | sort -un); do
   else
     git worktree add -q --no-track -b "$branch" "$path" "$base" >&2
   fi
+  [ -z "$branch" ] || git config "branch.$branch.ssak" "issue-$n"
   echo "issue $n $branch $path"
-done
+done <<<"$(printf '%s\n' "$@" | sort -t: -k1,1n -u)"
