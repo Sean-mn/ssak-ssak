@@ -183,6 +183,14 @@ check "pushes to the fork, opens a draft" "https://github.com/other/repo/pull/9
 0" "$(op fork ssak/contrib-5)"
 check "draft with fork head" "1" "$(grep -c -- '--draft --base main --head me:ssak/contrib-5' "$STUB_LOG")"
 check "branch on the fork" "$(git rev-parse ssak/contrib-5)" "$(git -C "$tmp/me/repo.git" rev-parse ssak/contrib-5)"
+git branch -q feat/x
+check "issue branch: refuses another repo's remote" "2" "$(op fork feat/x)"
+check "issue branch: refuses the default branch" "2" "$(op upstream main)"
+check "issue branch: refuses a missing branch" "2" "$(op upstream feat/none)"
+check "issue branch: pushes to the repo, opens a draft" "https://github.com/other/repo/pull/9
+0" "$(op upstream feat/x)"
+check "draft with same-repo head" "1" "$(grep -c -- '--draft --base main --head feat/x ' "$STUB_LOG")"
+check "issue branch on the repo" "$(git rev-parse feat/x)" "$(git -C "$tmp/other/repo.git" rev-parse feat/x)"
 
 echo "# setup-fork.sh"
 setupfork="$skills/ssak-contrib/scripts/setup-fork.sh"

@@ -1,7 +1,7 @@
 ---
 name: ssak-issue
 description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --herdr, each worker runs as its own Claude Code pane in Herdr instead of a subagent. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue 12 15 --herdr medium", "/ssak-issue --find" or "work on issues 12 and 15".
-argument-hint: "<issue#> [issue#...] [--herdr [model] [effort]] | --find"
+argument-hint: "<issue#> [issue#...] [--pr] [--herdr [model] [effort]] | --find"
 # for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
@@ -20,6 +20,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
 - `../ssak-herdr/references/panes.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
+- `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
 
 ## Subagents
 `../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:
@@ -29,8 +30,9 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 ## 0. Prepare
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
-3. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-herdr/references/panes.md`. With one issue `--herdr` changes nothing; say so in one line.
-4. Otherwise strip a leading `#` from each argument (`#12` → `12`), then check that every argument is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] | --find`). Drop duplicate numbers.
+3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
+4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-herdr/references/panes.md`. With one issue `--herdr` changes nothing; say so in one line.
+5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] [--pr] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
 1. Run `bash <skill dir>/scripts/find-issues.sh "$(gh repo view --json nameWithOwner -q .nameWithOwner)"`.
@@ -83,7 +85,8 @@ Then, before any worktree is made:
 5. Commit in the repo's format (see "Commit format").
 6. Launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief", giving your own summary and test results as the worker report. On `FAIL`, fix the reasons with new commits (no amend) and verify again with a fresh verifier. At most 2 reworks; if the third verification still fails, the issue ends as FAIL.
 7. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
-8. Report using the final report format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
+8. With `--pr`, open the PR (see "Open PRs").
+9. Report using the final report format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Two or more issues: work, verify, report
 Copy this checklist into your reply and tick it as you go:
@@ -94,7 +97,9 @@ Copy this checklist into your reply and tick it as you go:
 - [ ] 4. Launch one worker per group (subagent or Herdr pane)
 - [ ] 5. Verify each DONE issue with a fresh verifier
 - [ ] 6. Rework each FAIL, at most 2 per issue; back to 5 after each
-- [ ] 7. Check overlaps, remove worktrees with cleanup.sh --keep-branch, final report
+- [ ] 7. Check overlaps, remove worktrees with cleanup.sh --keep-branch
+- [ ] 8. With --pr: PR drafts, wait for yes, open-pr.sh
+- [ ] 9. Final report
 ```
 
 1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
@@ -112,7 +117,16 @@ Copy this checklist into your reply and tick it as you go:
 7. When every issue is finished:
    1. Compare changed files across the issue branches with `git diff --name-only <base>...<branch>` to find overlaps.
    2. Remove the worktrees but keep the branches, which hold the work: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`. Never pass `--force`; a worktree it skips (uncommitted changes) stays and goes in the report.
-   3. Report using the "Final report" format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
+   3. With `--pr`, open the PRs (see "Open PRs").
+   4. Report using the "Final report" format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
+
+## Open PRs (`--pr`)
+Only PASS issues get a PR; name the FAIL and BLOCKED ones that got none.
+1. Title: the repo's PR title format (CONTRIBUTING.md, a PR title check in `.github/workflows/`), otherwise the "Commit format". Body: the repo's PR template (`.github/PULL_REQUEST_TEMPLATE.md` or similar) filled in, otherwise the "PR body" in `references/templates.md`. Include `Closes #<num>`. Write it to `.claude/worktrees/ssak-issue-<num>.pr.md`.
+2. Base: the base ref without its remote (`origin/main` → `main`). A stacked issue's base is the earlier issue's branch, so open the earlier PR first; if the earlier issue gets no PR, neither does the stacked one.
+3. Show every "PR draft" from `references/templates.md` at once and ask whether to push and open them. Open nothing without a yes; the user may drop some or ask for changes.
+4. For each approved one, from the main checkout: `bash <skill dir>/../ssak-contrib/scripts/open-pr.sh "$(git rev-parse --show-toplevel)" origin <branch> <owner/repo> <base> "<title>" <body file>`, with `<owner/repo>` from `gh repo view --json nameWithOwner -q .nameWithOwner`. If it refuses (exit 2), report why and do not push another way.
+5. Delete the body files. Put each PR URL in the report.
 
 ## Herdr workers (`--herdr`)
 Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-herdr/references/panes.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
@@ -124,6 +138,6 @@ Same steps as "Two or more issues", but each worker is a separate Claude Code se
 - Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. Delete the brief and report files after the final report.
 
 ## Rules
-- Do not push, open PRs, close issues, or comment on issues. The user decides after reading the report.
+- Push and open PRs only with `--pr`, only after the user's yes, and only through `open-pr.sh`. Without `--pr`, the user decides after reading the report. Never close or comment on issues.
 - The main agent relays the verifier's verdict as is. With two or more issues it does not edit issue branches itself.
 - Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.
