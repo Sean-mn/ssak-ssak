@@ -24,18 +24,19 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 2. Name: `--name` if given, otherwise a short kebab-case name from the task (e.g. `fix-login`), matching `[a-z][a-z0-9_-]{0,31}`. If `herdr agent list` already has it, add `-2`, `-3`...
 3. Where: the current directory. If the task edits files and another agent is already editing this checkout, say so in one line and suggest a git worktree before starting, since two agents in one checkout overwrite each other.
 4. Give it a pane as in "When panes come one at a time" in `references/herdr.md`, with `--cwd "$PWD"`. New tabs are labelled `ssak-orchestrate-<n>`.
-5. Start Claude Code in it with the model and effort from step 1 (drop `--effort <effort>` if step 1 found none), and hand over the task, as in "Starting and prompting an agent". A long task goes in `herdr-<name>.md` in a fresh `mktemp -d` directory.
+5. Start Claude Code in it with the model and effort from step 1 (drop `--effort <effort>` if step 1 found none), and hand over the task, as in "Starting and prompting an agent". A long task goes in `herdr-<name>.md` in a fresh `mktemp -d` directory, one directory per agent; a long `send` later goes in `herdr-<name>-2.md`, `-3`... in the same directory.
 6. Tell the user in two lines: the agent name, pane ID, model and effort, and that `/ssak-orchestrate read <name>` shows its progress. Do not wait for it to finish unless the user asked.
+7. Delete the agent's handoff files and their directory, as in "Handoff files" in `references/herdr.md`, when `read <name>` finds it `done`, when you close its pane, or when you waited for it and it finished.
 
 ## `list`
 Run `herdr agent list` and show each agent's name, pane and state (`working`, `idle`, `done`, `blocked`, `unknown`).
 
 ## `read <name>`
 1. `herdr agent get <name>` for the state, then `herdr agent read <name> --source recent-unwrapped --lines 120`.
-2. Summarize what it did and where it stands. If it is `blocked`, show the question it asks and let the user answer.
+2. Summarize what it did and where it stands. If it is `blocked`, show the question it asks and let the user answer. If it is `done`, delete its handoff files (step 7 of "New task").
 
 ## `send <name> <text>`
-Prompt it as in step 4 of "Starting and prompting an agent" in `references/herdr.md`.
+Prompt it as in steps 3 and 4 of "Starting and prompting an agent" in `references/herdr.md`, putting a long text in a file as in step 5 of "New task".
 
 ## Rules
 - Close only panes this skill started, and only when the user asks, as in "Closing" in `references/herdr.md`.
