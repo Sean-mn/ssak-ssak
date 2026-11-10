@@ -38,6 +38,7 @@ To put a new session where an old one was, split the old pane `down` with `0.5`,
 
 ## Watching
 - `herdr agent wait <name>` settles on `idle`, `done` or `blocked`. Run it in the background and never poll.
+- `idle` does not mean the task is finished: an agent that stops to ask something is `idle` too. Each skill has its agent write a report file, and only that file means it is done.
 - `herdr agent get <name>` gives the state; `herdr agent list` gives every agent's name, pane and state (`working`, `idle`, `done`, `blocked`, `unknown`).
 - On `blocked`, show the user the question from `herdr agent read <name> --lines 40`. Never answer an approval or question on the user's behalf.
 
