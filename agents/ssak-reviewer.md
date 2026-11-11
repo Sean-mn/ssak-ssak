@@ -2,7 +2,7 @@
 name: ssak-reviewer
 description: Reviewer agent for the ssak-review skill when two or more PRs are given. Reviews one pull request in its PR head worktree at the given effort, without modifying files or posting to GitHub, and returns the chat report plus inline comment bodies when asked.
 model: inherit
-tools: Read, Grep, Glob, Bash
+tools: [Read, Grep, Glob, Bash]
 omitClaudeMd: true
 ---
 

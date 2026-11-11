@@ -27,6 +27,7 @@ cat <<EOF
 
 - Claude Code: \`/plugin marketplace update ssak-ssak\`, then update ssak-ssak from \`/plugin\` and restart.
 - Codex: \`codex plugin marketplace upgrade\`
+- Antigravity: \`git pull\` in your clone, then \`agy plugin install .\`
 
 New install: see [Quick Start]($repo#quick-start).
 

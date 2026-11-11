@@ -36,7 +36,7 @@ def frontmatter(path):
 
 
 manifests = {}
-for path in sorted([*root.glob(".claude-plugin/*.json"), *root.glob(".codex-plugin/*.json"), *root.glob(".agents/plugins/*.json")]):
+for path in sorted([*root.glob(".claude-plugin/*.json"), *root.glob(".codex-plugin/*.json"), *root.glob(".antigravity-plugin/*.json"), *root.glob(".agents/plugins/*.json")]):
     try:
         manifests[path.relative_to(root).as_posix()] = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
@@ -46,6 +46,9 @@ claude = manifests.get(".claude-plugin/plugin.json", {})
 codex = manifests.get(".codex-plugin/plugin.json", {})
 if claude.get("version") != codex.get("version"):
     errors.append(f"version mismatch: .claude-plugin {claude.get('version')} vs .codex-plugin {codex.get('version')}")
+agy = manifests.get(".antigravity-plugin/plugin.json", {})
+if claude.get("version") != agy.get("version"):
+    errors.append(f"version mismatch: .claude-plugin {claude.get('version')} vs .antigravity-plugin {agy.get('version')}")
 
 # Claude Code picks up agents/*.md at the plugin root on its own
 for agent in sorted(root.glob("agents/*.md")):
@@ -56,8 +59,8 @@ for agent in sorted(root.glob("agents/*.md")):
         errors.append(f"{rel(agent)}: 'model' must be a non-empty string")
     if agent.stem != "ssak-reviewer" and (not isinstance(data.get("effort"), str) or not data["effort"].strip()):
         errors.append(f"{rel(agent)}: 'effort' must be a non-empty string")
-    if agent.stem != "ssak-worker" and data.get("tools") != "Read, Grep, Glob, Bash":
-        errors.append(f"{rel(agent)}: checking agents must have tools 'Read, Grep, Glob, Bash'")
+    if agent.stem != "ssak-worker" and data.get("tools") != ["Read", "Grep", "Glob", "Bash"]:
+        errors.append(f"{rel(agent)}: checking agents must have tools [Read, Grep, Glob, Bash]")
 
 skill_names = {s.parent.name for s in root.glob("skills/*/SKILL.md")}
 for skill in sorted(root.glob("skills/*/SKILL.md")):

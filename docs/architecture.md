@@ -1,7 +1,7 @@
 # Architecture
 
-ssak-ssak is a set of instructions plus small scripts. The main agent (Claude Code or
-Codex) reads a `SKILL.md`, runs its scripts for anything that must be exact or safe,
+ssak-ssak is a set of instructions plus small scripts. The main agent (Claude Code,
+Codex or Antigravity) reads a `SKILL.md`, runs its scripts for anything that must be exact or safe,
 and hands parts of the work to subagents defined in `agents/`.
 
 ## Layers
@@ -12,7 +12,7 @@ and hands parts of the work to subagents defined in `agents/`.
 | References | `skills/<name>/references/*.md` | Templates the skill fills in: agent briefs, report and comment formats, checklists. Loaded only when a step needs them. |
 | Scripts | `skills/<name>/scripts/*.sh` | Everything that must be deterministic or must refuse unsafe input: creating worktrees, finding issues, posting reviews, pushing, cleanup. |
 | Subagents | `agents/*.md` | One job each, with fixed model, effort and tools in frontmatter. They report back in a fixed English format. |
-| Manifests | `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/` | Plugin and marketplace metadata. Claude Code finds `agents/` and `skills/` on its own; Codex reads `skills` from its manifest. |
+| Manifests | `.claude-plugin/`, `.codex-plugin/`, `.antigravity-plugin/`, `.agents/plugins/` | Plugin and marketplace metadata. Claude Code finds `agents/` and `skills/` on its own; Codex reads `skills` from its manifest; Antigravity finds `skills/` and `agents/` at the plugin root from `.antigravity-plugin/plugin.json`. |
 
 Skills share scripts across folders: `ssak-contrib` uses `ssak-issue`'s
 `find-issues.sh` and `common.sh`, and `ssak-issue` and `ssak-review` call
@@ -28,7 +28,7 @@ Skills share scripts across folders: `ssak-contrib` uses `ssak-issue`'s
 | `ssak-reviewer` | ssak-review (2+ PRs) | inherit / session | no | Reviews one PR in its worktree and returns the report. Starts without CLAUDE.md. |
 | `ssak-refuter` | ssak-review at `xhigh` | inherit / medium | no | Tries to disprove one Critical or High finding. Starts without CLAUDE.md. |
 
-When an agent is not registered (e.g. in Codex), the skill reads the agent file and
+When an agent is not registered (e.g. in Codex, or the `sonnet` agents in Antigravity), the skill reads the agent file and
 passes its instructions with the brief to a general-purpose subagent. Subagents cannot
 launch subagents, so the main agent runs every fan-out (scouts, workers, verifiers,
 refuters).
