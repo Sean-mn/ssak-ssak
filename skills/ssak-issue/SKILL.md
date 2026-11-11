@@ -19,7 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
-- `../ssak-orchestrate/references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
+- `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
 - `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
 
 ## Subagents
@@ -31,7 +31,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
 3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
-4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-orchestrate/references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
+4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
 5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] [--pr] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -77,8 +77,18 @@ Then, before any worktree is made:
 - An open dependency outside this run: ask the user once, naming every such issue and what it waits on, whether to add the dependency to the run, skip the waiting issue, or go ahead anyway. Start nothing for those issues until they answer.
 - A cycle: name it and ask the user which order to take.
 
+## Asking the user
+The user works on the issues with you; do not settle open questions alone. Ask when:
+- an issue allows more than one reading, lacks acceptance criteria, or leaves scope, design or behavior open (a new option or API, which of two fixes, how far a refactor goes);
+- the issue text, its comments and the code disagree;
+- a worker or the verifier reports a question (`BLOCKED`, or an open decision in its report), or the work would touch more than the issue names.
+
+How: as in `../../references/asking-the-user.md`. Before launching, read every issue and ask once for all of them together, naming each issue. Launch groups with nothing open meanwhile. Put the user's answers in the brief under "User decisions". When a worker is `BLOCKED` on a question, ask it the same way, then send the answer as a rework-style prompt (a new brief with the answer; no verifier run in between).
+
+If the user said to go with your recommendation, decide as that file says, and say in the report which choices you made.
+
 ## One issue: the main agent works directly
-1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues".
+1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues". Ask about anything open, as in "Asking the user", before making the worktree; ask again during the work when a new question comes up.
 2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
@@ -129,7 +139,7 @@ Only PASS issues get a PR; name the FAIL and BLOCKED ones that got none.
 5. Delete the body files. Put each PR URL in the report.
 
 ## Herdr workers (`--herdr`)
-Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-orchestrate/references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
+Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../../references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
 - Step 4, launch: lay out every group's pane at once, as in "When the number of panes is known", each with its worktree path as `--cwd`. New tabs are labelled `ssak-issue-<n>`. Then for each group:
   1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`. That folder is git-excluded by `make-worktrees.sh`.
   2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer.
@@ -138,6 +148,7 @@ Same steps as "Two or more issues", but each worker is a separate Claude Code se
 - Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. After the final report, delete every issue's brief, rework and report files, including issues that ended `BLOCKED` or `FAIL` and worktrees that `cleanup.sh` kept, as in "Handoff files".
 
 ## Rules
+- Never settle an ambiguity or a user-owned choice on your own, and never let a worker do it, unless the user said to go with the AI's recommendation. See "Asking the user".
 - Push and open PRs only with `--pr`, only after the user's yes, and only through `open-pr.sh`. Without `--pr`, the user decides after reading the report. Never close or comment on issues.
 - The main agent relays the verifier's verdict as is. With two or more issues it does not edit issue branches itself.
 - Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.

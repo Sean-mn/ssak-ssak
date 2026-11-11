@@ -69,6 +69,11 @@ agents and scripts it points at, and the tests that cover them.
   their `tools` read-only in frontmatter, and say so in their "Do not" section.
 - Stop and ask before anything the user did not ask for: claiming an issue, posting,
   removing a RISKY item.
+- Work with the user, not for them: when a request is ambiguous, an issue allows more
+  than one reading, or a choice (scope, design, behavior) is the user's to make, ask
+  with the options and a recommended one, as in [`references/asking-the-user.md`](references/asking-the-user.md), which every skill
+  shares. Decide alone only when the user has said to
+  go with the AI's recommendation.
 
 ### Git
 

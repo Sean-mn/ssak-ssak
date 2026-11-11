@@ -111,6 +111,7 @@ Report to the user in chat using the "Chat report" format in `references/review-
    - With `--comment`: post one review per PR as in step 4 "With `--comment`", from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then the "Multi-PR report" with each review URL, then each PR's chat report.
 
 ## Rules
+- When something is ambiguous or a choice is the user's (which PR, review depth, whether a finding is worth posting), ask the user as in `../../references/asking-the-user.md`: with options and a recommended one first, and decide alone only if the user said to go with your recommendation.
 - Always `"event": "COMMENT"`. Never approve or request changes, never edit, merge or close the PR, never push to its branch.
 - Write GitHub comments in the language of the PR description, in the tone `references/inline-template.md` sets.
 - Remove the review worktree only through `cleanup.sh` as in step 3, never with `--force`.

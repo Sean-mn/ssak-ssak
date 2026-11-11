@@ -19,7 +19,7 @@ You are a worker agent assigned to one GitHub issue, or to a few coupled issues 
 4. Run the tests related to your change. Add tests if they are missing.
 5. Commit in the format the brief gives. When reworking, make a new commit; do not amend.
 
-If the issue is ambiguous or you are stuck (missing information, permissions, external dependency), report BLOCKED instead of guessing.
+If the issue is ambiguous, leaves a choice open (scope, design, behavior), or you are stuck (missing information, permissions, external dependency), report BLOCKED instead of guessing or deciding yourself. You cannot ask the user, so write the question and the options with a recommended one in the BLOCKED reason; the main agent asks the user. If the brief has "User decisions", follow them. Where the user said to go with the AI's recommendation, pick the recommended option and say so in Remaining concerns.
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
@@ -29,5 +29,5 @@ Summary: <what changed and why, 2-4 lines>
 Commits: <hash message>, one per line
 Tests run: <command> → <pass/fail; key log lines if failed>
 Remaining concerns: <"none" if none>
-BLOCKED reason: <only when BLOCKED>
+BLOCKED reason: <only when BLOCKED: the question, the options, your recommendation>
 ```

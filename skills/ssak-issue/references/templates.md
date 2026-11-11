@@ -19,6 +19,8 @@ Work on issue #<num>.
 - read the issue: gh issue view <num> --comments
 - scout map (a starting point, check it yourself; omit the line if there is none):
 <full scout report>
+- User decisions (the user's answers to open questions; "go with your recommendation" if they said so; omit if none):
+<answers>
 Implement it, commit, then answer in your defined report format.
 ```
 
@@ -30,6 +32,8 @@ Work on coupled issues #<num>, #<num>... in this order. <why they are coupled, o
 Commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
 Scout maps (a starting point, check them yourself; omit for issues without one):
 <full scout report per issue>
+User decisions (the user's answers to open questions; omit if none):
+<answers>
 For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier branch> after the earlier issue is committed.
 Do each issue only in its own worktree, commit it there, then answer with one report per issue in your defined format.
 ```
