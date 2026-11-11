@@ -68,8 +68,10 @@ PR-caused, base already failing, flaky or config → suggested fix → for PR ca
 confirms → fix and a local commit on the PR branch (never pushed).
 
 **ssak-orchestrate**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
-there with the given model and effort, hands it the task; `list`, `read` and `send`
-check on it.
+there with the given model and effort, hands it the task with a report request →
+waits in the background (`herdr agent wait`) while the main pane stays free → reports
+the agent's report file when it appears (`--no-wait` skips the waiting); `list`, `read`
+and `send` check on it.
 
 **ssak-clean-up**: `cleanup.sh scan` marks each worktree and branch SAFE or RISKY →
 user picks → `cleanup.sh remove`.
