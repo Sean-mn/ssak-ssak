@@ -19,7 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
-- `../ssak-orchestrate/references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
+- `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
 - `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
 
 ## Subagents
@@ -31,7 +31,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
 3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
-4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../ssak-orchestrate/references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
+4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
 5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] [--pr] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -139,7 +139,7 @@ Only PASS issues get a PR; name the FAIL and BLOCKED ones that got none.
 5. Delete the body files. Put each PR URL in the report.
 
 ## Herdr workers (`--herdr`)
-Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../ssak-orchestrate/references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
+Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../../references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
 - Step 4, launch: lay out every group's pane at once, as in "When the number of panes is known", each with its worktree path as `--cwd`. New tabs are labelled `ssak-issue-<n>`. Then for each group:
   1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`. That folder is git-excluded by `make-worktrees.sh`.
   2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer.
