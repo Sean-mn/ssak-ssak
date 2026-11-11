@@ -2,11 +2,12 @@
 
 # ssak-ssak
 
-Claude Code와 Codex용 개인 스킬 하네스: 이슈 작업, PR 리뷰, 오픈소스 기여, 정리.
+Claude Code, Codex, Antigravity용 개인 스킬 하네스: 이슈 작업, PR 리뷰, 오픈소스 기여, 정리.
 
 [![version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSean-mn%2Fssak-ssak%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=blue)](.claude-plugin/plugin.json)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-D97757)](#claude-code)
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
+[![Antigravity](https://img.shields.io/badge/Antigravity-plugin-4285F4)](#antigravity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 빠른 시작
@@ -31,6 +32,15 @@ codex plugin add ssak-ssak@ssak-ssak
 
 업데이트: `codex plugin marketplace upgrade`
 
+### Antigravity
+
+```bash
+git clone https://github.com/Sean-mn/ssak-ssak.git
+agy plugin install ./ssak-ssak
+```
+
+업데이트: `git pull` 후 `agy plugin install ./ssak-ssak`을 다시 실행하세요. `ssak-scout`와 `ssak-verifier` 에이전트는 Antigravity가 받지 않는 `sonnet` 모델을 쓰므로 건너뛰고, 스킬이 그 작업을 범용 서브에이전트에서 실행해요.
+
 ## 스킬
 
 | 명령 | 하는 일 |
@@ -46,4 +56,4 @@ codex plugin add ssak-ssak@ssak-ssak
 | `/ssak-contrib <owner/repo> --find` | 아무도 맡지 않은 입문자용 이슈를 보여줘요. |
 | `/ssak-clean-up [id...]` | 스킬들이 남긴 worktree와 브랜치를 정리해요. 지우기 전에 물어봐요. |
 
-Claude Code에서는 명령이 `/ssak-ssak:ssak-issue`처럼 보일 수 있어요. Codex에서는 이름으로 요청하면 돼요. 예: "ssak-issue --find 써줘".
+Claude Code에서는 명령이 `/ssak-ssak:ssak-issue`처럼 보일 수 있어요. Codex와 Antigravity에서는 이름으로 요청하면 돼요. 예: "ssak-issue --find 써줘".

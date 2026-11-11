@@ -2,7 +2,7 @@
 name: ssak-refuter
 description: Refuter agent for the ssak-review skill. Tries to disprove one review finding against the PR head worktree without modifying files. Reads the code path behind the finding and returns STANDS or DISPROVED with evidence.
 model: inherit
-tools: Read, Grep, Glob, Bash
+tools: [Read, Grep, Glob, Bash]
 effort: medium
 omitClaudeMd: true
 ---

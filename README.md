@@ -2,11 +2,12 @@ English | [한국어](README.ko.md)
 
 # ssak-ssak
 
-Personal skill harness for Claude Code and Codex: issue work, PR review, open source contributions and cleanup.
+Personal skill harness for Claude Code, Codex and Antigravity: issue work, PR review, open source contributions and cleanup.
 
 [![version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSean-mn%2Fssak-ssak%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=blue)](.claude-plugin/plugin.json)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-D97757)](#claude-code)
 [![Codex](https://img.shields.io/badge/Codex-plugin-412991)](#codex)
+[![Antigravity](https://img.shields.io/badge/Antigravity-plugin-4285F4)](#antigravity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Quick Start
@@ -31,6 +32,15 @@ codex plugin add ssak-ssak@ssak-ssak
 
 Update with `codex plugin marketplace upgrade`.
 
+### Antigravity
+
+```bash
+git clone https://github.com/Sean-mn/ssak-ssak.git
+agy plugin install ./ssak-ssak
+```
+
+Update with `git pull`, then `agy plugin install ./ssak-ssak` again. The `ssak-scout` and `ssak-verifier` agents use the `sonnet` model, which Antigravity does not accept, so it skips them and the skills run those jobs in a general-purpose subagent.
+
 ## Skills
 
 | Command | What it does |
@@ -46,4 +56,4 @@ Update with `codex plugin marketplace upgrade`.
 | `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
 | `/ssak-clean-up [id...]` | Removes worktrees and branches the skills left behind. Asks first. |
 
-In Claude Code a command may show as `/ssak-ssak:ssak-issue`. In Codex, ask by name, e.g. "use ssak-issue --find".
+In Claude Code a command may show as `/ssak-ssak:ssak-issue`. In Codex and Antigravity, ask by name, e.g. "use ssak-issue --find".

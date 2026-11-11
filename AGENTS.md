@@ -5,7 +5,7 @@ this first; follow links only when the task needs them.
 
 ## What ssak-ssak is
 
-A plugin for Claude Code and Codex: skills and subagents for GitHub work. That covers
+A plugin for Claude Code, Codex and Antigravity (agy): skills and subagents for GitHub work. That covers
 issue work in parallel worktrees, PR review, CI failure triage, open source
 contributions, Herdr panes and cleanup. There is no app here. The product is the
 Markdown instructions in `skills/` and `agents/` and the bash scripts beside them.
@@ -25,7 +25,7 @@ a way the user did not approve. When uncertain, stop and ask; never guess.**
 | Skill trigger evals | [`evals/`](evals/) |
 | Script tests (offline, throwaway git repo) | [`tests/run.sh`](tests/run.sh) |
 | Static checks: manifests, frontmatter, README rows, file references | [`.github/check.py`](.github/check.py) |
-| Plugin manifests | `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/` |
+| Plugin manifests | `.claude-plugin/`, `.codex-plugin/`, `.antigravity-plugin/`, `.agents/plugins/` |
 
 Do not load the whole repository into context. Read the skill you are changing, the
 agents and scripts it points at, and the tests that cover them.
@@ -73,8 +73,8 @@ agents and scripts it points at, and the tests that cover them.
 ### Git
 
 - One logical change = one commit = one PR. No unrelated changes in a PR.
-- Leave the version alone. Only a `release vX.Y.Z: <highlights>` PR changes it, in both
-  `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` (`pr-title.sh` enforces this).
+- Leave the version alone. Only a `release vX.Y.Z: <highlights>` PR changes it, in
+  `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.antigravity-plugin/plugin.json` (`pr-title.sh` enforces this).
 - Never use `--no-verify`, never force-push `main`, never merge with failing checks.
 - **Never add `Co-Authored-By` or any AI attribution trailer** to commits or PRs. Use
   the repository's configured Git identity; never change it.
