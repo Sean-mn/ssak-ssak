@@ -20,5 +20,8 @@ jobs:
         env:
           TITLE: ${{ github.event.pull_request.title }}  # through env, never inline: titles are user input
         run: |
-          base=$(git show HEAD^1:.claude-plugin/plugin.json | jq -r .version)
-          bash .github/pr-title.sh "$TITLE" "$base" "$(jq -r .version .claude-plugin/plugin.json)"
+          for m in .claude-plugin .codex-plugin .antigravity-plugin; do
+            echo "$m/plugin.json"
+            base=$(git show "HEAD^1:$m/plugin.json" | jq -r .version)
+            bash .github/pr-title.sh "$TITLE" "$base" "$(jq -r .version "$m/plugin.json")"
+          done
