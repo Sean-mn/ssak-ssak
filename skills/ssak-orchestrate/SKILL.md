@@ -62,6 +62,7 @@ Run `herdr agent list` and show each agent's name, pane and state (`working`, `i
 Prompt it as in steps 3 and 4 of "Starting and prompting an agent" in `references/herdr.md`, putting a long text in a file as in step 5 of "New task".
 
 ## Rules
+- When the task or a choice is ambiguous, ask the user as in `../../references/asking-the-user.md` before starting an agent: with options and a recommended one first, and decide alone only if the user said to go with your recommendation.
 - Close only panes this skill started, and only when the user asks, as in "Closing" in `references/herdr.md`.
 - Never answer a `blocked` agent's approval or question on the user's behalf.
 - An agent is finished only when its report file exists; `idle` alone is not enough.

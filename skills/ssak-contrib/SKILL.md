@@ -77,6 +77,7 @@ Run `setup-fork.sh <owner/repo> <issue#> [base-branch]`, passing the target bran
 4. Finish with the "Final report". If a verifier FAIL reason was not covered by the brief, the repo's rules or `references/rules-checklist.md`, propose one new rule for it at the end and add it only after the user approves.
 
 ## Rules
+- When an issue allows more than one reading or a choice is the user's (which issue, scope, design), ask the user as in `../../references/asking-the-user.md`: with options and a recommended one first, and decide alone only if the user said to go with your recommendation.
 - Nothing visible on GitHub happens before the user's yes in step 2 (fork) and step 6 (push and PR).
 - Always open the PR as a draft. Never mark it ready, request reviewers, or comment on the issue or PR.
 - Never push to upstream, never force-push, never sign a CLA or claim an issue for the user.

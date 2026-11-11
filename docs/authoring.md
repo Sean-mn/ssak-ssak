@@ -19,6 +19,11 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
 - Never pick a value the user must choose (effort, which issues, what to remove). Show
   the usage and stop instead.
 - Ask before anything outward-facing or destructive, and wait for the answer.
+- Ask when something is ambiguous or a choice is the user's: name the question, give
+  the options with a recommended one first, and wait. The how lives in `references/asking-the-user.md`; a skill's Rules point at it with
+  `../../references/asking-the-user.md` and do not copy it. Only an explicit "go with your
+  recommendation" from the user lets the skill decide alone. A subagent cannot ask, so
+  its agent file says to report the question and options instead of guessing.
 - Long multi-phase skills get a checklist near the top that the agent ticks off.
 - End with a `## Rules` section of hard limits: what the skill never does.
 - Put long templates (briefs, reports, comment formats) in `references/` so they load

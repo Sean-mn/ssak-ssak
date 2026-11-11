@@ -77,8 +77,18 @@ Then, before any worktree is made:
 - An open dependency outside this run: ask the user once, naming every such issue and what it waits on, whether to add the dependency to the run, skip the waiting issue, or go ahead anyway. Start nothing for those issues until they answer.
 - A cycle: name it and ask the user which order to take.
 
+## Asking the user
+The user works on the issues with you; do not settle open questions alone. Ask when:
+- an issue allows more than one reading, lacks acceptance criteria, or leaves scope, design or behavior open (a new option or API, which of two fixes, how far a refactor goes);
+- the issue text, its comments and the code disagree;
+- a worker or the verifier reports a question (`BLOCKED`, or an open decision in its report), or the work would touch more than the issue names.
+
+How: as in `../../references/asking-the-user.md`. Before launching, read every issue and ask once for all of them together, naming each issue. Launch groups with nothing open meanwhile. Put the user's answers in the brief under "User decisions". When a worker is `BLOCKED` on a question, ask it the same way, then send the answer as a rework-style prompt (a new brief with the answer; no verifier run in between).
+
+If the user said to go with your recommendation, decide as that file says, and say in the report which choices you made.
+
 ## One issue: the main agent works directly
-1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues".
+1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues". Ask about anything open, as in "Asking the user", before making the worktree; ask again during the work when a new question comes up.
 2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
 4. Implement as usual and run the project's tests, build and lint.
@@ -138,6 +148,7 @@ Same steps as "Two or more issues", but each worker is a separate Claude Code se
 - Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. After the final report, delete every issue's brief, rework and report files, including issues that ended `BLOCKED` or `FAIL` and worktrees that `cleanup.sh` kept, as in "Handoff files".
 
 ## Rules
+- Never settle an ambiguity or a user-owned choice on your own, and never let a worker do it, unless the user said to go with the AI's recommendation. See "Asking the user".
 - Push and open PRs only with `--pr`, only after the user's yes, and only through `open-pr.sh`. Without `--pr`, the user decides after reading the report. Never close or comment on issues.
 - The main agent relays the verifier's verdict as is. With two or more issues it does not edit issue branches itself.
 - Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.
