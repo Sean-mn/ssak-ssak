@@ -48,17 +48,18 @@ The main pane stays free while it waits: keep talking with the user meanwhile.
    - `idle` or `done` with the report file present: the agent is finished. Go to step 3.
    - `idle` or `done` without it: `idle` also means the agent stopped to ask something. Read `herdr agent read <name> --source recent-unwrapped --lines 120`. If it asks the user something, show the question; if it is still mid-task, wait again.
 3. Read the report and tell the user, in their language: STATUS, summary, changes and checks, and anything under "Needs the user". With two or more agents waiting, report each one as it finishes; never hold one back for the others. On `BLOCKED`, once the user has answered, delete the report file and wait again from step 1.
-4. Leave the pane open, so the user can keep working with that session. Mention `/ssak-orchestrate send <name> <text>` for follow-ups.
+4. Otherwise delete the agent's handoff files and their directory, as in "Handoff files" in `references/herdr.md`.
+5. Leave the pane open, so the user can keep working with that session. Mention `/ssak-orchestrate send <name> <text>` for follow-ups.
 
 ## `list`
 Run `herdr agent list` and show each agent's name, pane and state (`working`, `idle`, `done`, `blocked`, `unknown`).
 
 ## `read <name>`
 1. `herdr agent get <name>` for the state, then `herdr agent read <name> --source recent-unwrapped --lines 120`. If its report file exists (the path from step 7 of "New task"), read that too.
-2. Summarize what it did and where it stands, from the report when there is one. If it is `blocked`, show the question it asks and let the user answer.
+2. Summarize what it did and where it stands, from the report when there is one. If it is `blocked`, show the question it asks and let the user answer. If it is finished (report file present), delete its handoff files as in step 4 of "Waiting for the result".
 
 ## `send <name> <text>`
-Prompt it as in step 4 of "Starting and prompting an agent" in `references/herdr.md`.
+Prompt it as in steps 3 and 4 of "Starting and prompting an agent" in `references/herdr.md`, putting a long text in a file as in step 5 of "New task".
 
 ## Rules
 - Close only panes this skill started, and only when the user asks, as in "Closing" in `references/herdr.md`.

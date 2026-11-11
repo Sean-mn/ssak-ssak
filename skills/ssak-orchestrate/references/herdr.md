@@ -32,7 +32,7 @@ To put a new session where an old one was, split the old pane `down` with `0.5`,
 ## Starting and prompting an agent
 1. Start Claude Code in the pane: `herdr agent start <name> --kind claude --pane <pane id> -- --model <model> --effort <effort> -n <name>`. Always pass the model, so the pane does not fall back to the user's default.
 2. On `agent_not_ready` (a startup dialog such as folder trust), read it with `herdr agent read <name> --lines 40`, tell the user what it asks, and let them answer it in the pane.
-3. Text longer than a couple of lines goes in a file first, so quoting cannot break it, and the prompt says `Read <path> and follow it.`
+3. Text longer than a couple of lines goes in a file first, so quoting cannot break it, and the prompt says `Read <path> and follow it.` Note the path: the file is deleted later, as in "Handoff files".
 4. `herdr agent prompt <name> "<text>" --wait --timeout 60000`. The wait only confirms the session started working. A `timeout` or `agent_prompt_stalled` does not mean the prompt was lost: check `herdr agent read <name> --lines 40` before sending anything again. On `agent_blocked`, show the pending question instead of sending.
 5. The main pane can prompt a running agent at any time, e.g. to ask how it is going; the message is taken after the agent's current step. Read the answer with `herdr agent read <name> --source recent-unwrapped --lines 120`.
 
@@ -44,3 +44,6 @@ To put a new session where an old one was, split the old pane `down` with `0.5`,
 
 ## Closing
 Close only panes this skill run started, with `herdr pane close <pane id>`. Never close other panes, tabs or workspaces, and never run `herdr server stop`.
+
+## Handoff files
+Files written for an agent (a brief, a long prompt, a report it writes back) are deleted by the skill that wrote them, at the point its steps name. Delete only those files, each by its exact path with `rm -f <path>`, then a `mktemp -d` directory with `rmdir <dir>`. Never use `rm -r` or a glob. If a file cannot be deleted yet because its agent is still working, name it in your message to the user.
