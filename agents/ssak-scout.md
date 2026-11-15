@@ -1,7 +1,7 @@
 ---
 name: ssak-scout
 description: Scout agent for the ssak-issue skill. Maps one GitHub issue to the files and functions it would change, inside the issue's worktree at the base branch, without modifying files. The main agent uses the map to group coupled issues and hands it to the worker.
-model: sonnet
+model: inherit
 effort: medium
 tools: [Read, Grep, Glob, Bash]
 ---

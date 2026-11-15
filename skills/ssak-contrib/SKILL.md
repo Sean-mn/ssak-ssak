@@ -17,9 +17,10 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes the branch to the fork and opens a draft PR, the only way this skill pushes or opens PRs. Refuses (exit 2) to push to upstream, never force-pushes, prints the PR URL.
 - `references/rules-checklist.md`: which rules to extract and when to stop.
 - `references/templates.md`: pre-flight summary, verifier brief, PR body, PR draft and final report.
+- `../../references/agent-model.md`: which model every agent runs on; ask first when the session model is above Opus.
 
 ## Subagent
-Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../../agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent.
+Verification uses the `ssak-verifier` subagent (`ssak-ssak:ssak-verifier` when installed as a plugin). If it is not registered, read `../../agents/ssak-verifier.md` and pass its instructions with the brief to a general-purpose subagent. It runs on the model from `../../references/agent-model.md`.
 
 ## Checklist
 Copy this into your reply and tick it as you go:

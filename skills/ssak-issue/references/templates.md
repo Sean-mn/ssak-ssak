@@ -89,7 +89,7 @@ Closes #<num>
 
 | Issue | Result | Branch | Model | Reworks | Summary |
 |---|---|---|---|---|---|
-| #<num> | ✅ PASS / ❌ FAIL / ⛔ BLOCKED | <branch> | <the model that did the work, e.g. sonnet, opus; "sonnet → opus" when a rework moved it up> | <0-2> | <one line> |
+| #<num> | ✅ PASS / ❌ FAIL / ⛔ BLOCKED | <branch> | <the model that did the work, e.g. opus> | <0-2> | <one line> |
 
 ### Needs attention
 - #<num>: <FAIL reason, BLOCKED reason, verifier NOTE, "suspected pre-existing failure" items>

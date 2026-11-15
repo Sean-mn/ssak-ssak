@@ -39,7 +39,7 @@ git clone https://github.com/Sean-mn/ssak-ssak.git
 agy plugin install ./ssak-ssak
 ```
 
-Update with `git pull`, then `agy plugin install ./ssak-ssak` again. The `ssak-scout` and `ssak-verifier` agents use the `sonnet` model, which Antigravity does not accept, so it skips them and the skills run those jobs in a general-purpose subagent.
+Update with `git pull`, then `agy plugin install ./ssak-ssak` again.
 
 ## Skills
 

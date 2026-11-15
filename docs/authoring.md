@@ -36,8 +36,9 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
   `ssak-reviewer`, which takes the review effort from its brief) so a max-effort session
   does not fan out max-effort agents. Checking agents get only `Read, Grep, Glob, Bash`, written as a YAML list
   (`tools: [Read, Grep, Glob, Bash]`) because Antigravity rejects a comma string.
-  Antigravity also rejects the `sonnet` model; it skips those agents (scout, verifier)
-  and the skills fall back to a general-purpose subagent with the agent file's text.
+  Every agent uses `model: inherit`; never pin a model in an agent file (Antigravity
+  rejects aliases like `sonnet`). Skills pick the model through
+  [`references/agent-model.md`](../references/agent-model.md).
 - `omitClaudeMd: true` for agents that need only their brief or read the repo's rule
   files themselves (reviewer, refuter).
 - Sections: what the brief gives you, `## Do not`, `## Steps`, a verdict or result

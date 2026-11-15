@@ -11,6 +11,7 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes. Read it before any `herdr` command; the steps below follow it.
+- `../../references/agent-model.md`: which model every agent runs on; ask first when the session model is above Opus.
 
 ## 0. Prepare
 1. Do the checks in "Before anything" in `../../references/herdr.md`.
@@ -18,7 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 
 ## New task
 1. Model and effort, from the leading words. Effort levels are `low`, `medium`, `high`, `xhigh`, `max`.
-   - Model: the first word if it is a model alias (`opus`, `sonnet`, `fable`, `haiku`) or a full model ID (`claude-...`). Otherwise this session's own model (its full model ID, e.g. `claude-opus-5-5`), so the new pane does not fall back to the user's default model.
+   - Model: the first word if it is a model alias (`opus`, `sonnet`, `fable`, `haiku`) or a full model ID (`claude-...`). Otherwise the full model ID from `../../references/agent-model.md` (this session's, e.g. `claude-opus-5-5`, or the user's pick when the session model is above Opus), so the new pane does not fall back to the user's default model.
    - Effort: the next word if it is an effort level. Otherwise this session's own effort, from `echo "$CLAUDE_EFFORT"`. If that is empty, leave `--effort` out of step 6 so the pane uses the user's default.
    The task is everything after these words, minus `--name <name>` and `--no-wait`.
 2. Name: `--name` if given, otherwise a short kebab-case name from the task (e.g. `fix-login`), matching `[a-z][a-z0-9_-]{0,31}`. If `herdr agent list` already has it, add `-2`, `-3`...

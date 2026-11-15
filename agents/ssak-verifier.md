@@ -1,7 +1,7 @@
 ---
 name: ssak-verifier
 description: Verifier agent for the ssak-issue and ssak-contrib skills. Independently checks an issue branch without modifying files. Checks the issue requirements, runs tests/build/lint, reviews the code, and returns PASS or FAIL.
-model: sonnet
+model: inherit
 effort: high
 tools: [Read, Grep, Glob, Bash]
 ---
