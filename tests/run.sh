@@ -104,6 +104,13 @@ check "kept branch still risky" "issue-3 RISKY wt=- branch=ssak/issue-3 | 1 comm
 check "force removes" "removed issue-3" "$(offline bash "$cleanup" remove --force issue-3)"
 check "nothing left" "nothing to clean" "$(offline bash "$cleanup" scan)"
 check "ignores non-ssak ids" "skip main: not an ssak id" "$(offline bash "$cleanup" remove main)"
+mkdir -p "$wt" && echo b > "$wt/ssak-issue-9.brief.md" && echo r > "$wt/ssak-issue-9.report.md" && echo x > "$wt/ssak-issue-9.notes.md"
+check "scans leftover handoff files" "issue-9 SAFE wt=- branch=- | handoff files: brief, report" "$(offline bash "$cleanup" scan)"
+check "keep-branch keeps handoff files" "skip issue-9: not found" "$(offline bash "$cleanup" remove --keep-branch issue-9)"
+check "removes handoff files" "removed issue-9" "$(offline bash "$cleanup" remove issue-9)"
+check "only the handoff files" "$wt/ssak-issue-9.notes.md" "$(ls "$wt"/ssak-issue-9.*)"
+rm -f "$wt/ssak-issue-9.notes.md"
+check "nothing left again" "nothing to clean" "$(offline bash "$cleanup" scan)"
 
 echo "# make-worktrees.sh, project branch names"
 out=$(bash "$skills/ssak-issue/scripts/make-worktrees.sh" 4:feat/4-x 2>&1)

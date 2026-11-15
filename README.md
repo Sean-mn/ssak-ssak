@@ -55,6 +55,6 @@ Update with `git pull`, then `agy plugin install ./ssak-ssak` again.
 | `/ssak-respond [pr#]` | Answers the review comments on your own PR. Sorts each unresolved thread into fix, answer or decline, fixes the code with local commits after you approve the plan, then posts a reply in each thread after you approve the drafts. Without a number, uses the current branch's PR. It never pushes and never resolves a thread. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |
 | `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
-| `/ssak-clean-up [id...]` | Removes worktrees and branches the skills left behind. Asks first. |
+| `/ssak-clean-up [id...]` | Removes worktrees, branches and leftover handoff files the skills left behind. Asks first. |
 
 In Claude Code a command may show as `/ssak-ssak:ssak-issue`. In Codex and Antigravity, ask by name, e.g. "use ssak-issue --find".

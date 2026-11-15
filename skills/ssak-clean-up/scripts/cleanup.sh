@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Find and remove what ssak skills leave in this repo: .claude/worktrees/ssak-{issue,review}-<n> worktrees
-# and ssak/{issue,contrib}-<n> (or make-worktrees.sh custom) branches. Remote branches and PRs are never touched.
+# and ssak/{issue,contrib}-<n> (or make-worktrees.sh custom) branches, plus the handoff files ssak-issue writes next to
+# its worktrees (.claude/worktrees/ssak-issue-<n>.{brief,rework,report,pr}.md) when a run stopped before deleting them.
+# Remote branches and PRs are never touched.
 #   cleanup.sh scan                       one line per id: "<id> <SAFE|RISKY> wt=<path|-> branch=<name|-> | <notes>"
 #   cleanup.sh remove [--force] [--keep-branch] <id>...
 #                                         re-checks each id; RISKY ids are skipped unless --force.
-#                                         --keep-branch removes only the worktree, so only the worktree is checked.
+#                                         --keep-branch removes only the worktree, so only the worktree is checked;
+#                                         handoff files stay too (ssak-issue still needs them then).
 # SAFE = removing loses nothing: no uncommitted changes and every branch commit is on a remote.
 # Requires: bash, git; gh optional (PR notes are skipped without it).
 set -euo pipefail
@@ -23,7 +26,19 @@ ids() {
         b=${k#branch.}; b=${b%.ssak}
         git show-ref -q --verify "refs/heads/$b" && echo "$v"
       done || true
+    for f in "$wtdir"/ssak-issue-*.md; do
+      [ -f "$f" ] || continue
+      f=${f##*/}
+      [[ "$f" =~ ^ssak-(issue-[1-9][0-9]*)[.](brief|rework|report|pr)[.]md$ ]] && echo "${BASH_REMATCH[1]}"
+    done || true
   } | sort -u
+}
+
+handoff_for() {  # handoff files of issue-<n>, one path per line
+  local f
+  for f in brief rework report pr; do
+    [ ! -f "$wtdir/ssak-$1.$f.md" ] || echo "$wtdir/ssak-$1.$f.md"
+  done
 }
 
 branch_for() {  # local branch name for <kind>-<n>, if it exists
@@ -43,7 +58,7 @@ branch_for() {  # local branch name for <kind>-<n>, if it exists
 # Sets wt, branch, risky, notes for one id. With a second arg "wt-only", the branch is ignored.
 check() {
   local kind=${1%-*} n=${1##*-} only=${2:-} out b
-  wt=-; branch=-; risky=0; notes=()
+  wt=-; branch=-; risky=0; notes=(); files=
 
   if [ "$kind" != contrib ] && git worktree list --porcelain | grep -qxF "worktree $wtdir/ssak-$kind-$n"; then
     wt="$wtdir/ssak-$kind-$n"
@@ -52,6 +67,11 @@ check() {
     elif out=$(git -C "$wt" status --porcelain) && [ -n "$out" ]; then
       risky=1; notes+=("uncommitted changes in worktree")
     fi
+  fi
+
+  if [ "$kind" = issue ] && [ "$only" != wt-only ]; then
+    files=$(handoff_for "$kind-$n")
+    [ -z "$files" ] || notes+=("handoff files: $(echo "$files" | sed 's#.*[.]\([a-z]*\)[.]md$#\1#' | paste -sd, - | sed 's/,/, /g')")
   fi
 
   if [ "$kind" != review ] && [ "$only" != wt-only ]; then
@@ -94,7 +114,7 @@ case ${1:-} in
     for id in "$@"; do
       [[ "$id" =~ ^(issue|review|contrib)-[1-9][0-9]*$ ]] || { echo "skip $id: not an ssak id"; continue; }
       check "$id" "$only"
-      if [ "$wt" = - ] && [ "$branch" = - ]; then echo "skip $id: not found"; continue; fi
+      if [ "$wt" = - ] && [ "$branch" = - ] && [ -z "$files" ]; then echo "skip $id: not found"; continue; fi
       if [ "$risky" = 1 ] && [ "$force" = 0 ]; then line "$id" | sed 's/^/skip (needs --force): /'; continue; fi
       if [ "$wt" != - ]; then
         if [ "$force" = 1 ]; then git worktree remove --force "$wt"; else git worktree remove "$wt"; fi
@@ -103,6 +123,8 @@ case ${1:-} in
         # Even --force cannot delete a branch another checkout is on
         git branch -D "$branch" >/dev/null 2>&1 || { echo "kept $branch: still checked out elsewhere; switch away first"; continue; }
       fi
+      # Handoff files are only briefs and reports, so they never make an id RISKY
+      while IFS= read -r f; do [ -z "$f" ] || rm -f "$f"; done <<<"$files"
       if [ -n "$only" ]; then echo "removed $id worktree (kept branch)"; else echo "removed $id"; fi
     done
     git worktree prune
