@@ -22,7 +22,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
 - `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
-- `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
+- `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`; when you already have an open PR from the branch, it pushes to it and prints its URL instead. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
 
 ## Subagents
 `../../agents/ssak-worker.md`, `../../agents/ssak-verifier.md` and `../../agents/ssak-scout.md` define the three subagents: the worker and scout for two or more issues, the verifier for every issue:

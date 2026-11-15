@@ -163,6 +163,7 @@ case "$*" in
   "label list"*) printf '%s' "${STUB_LABELS:-}" ;;
   "pr view"*) echo "$STUB_HEAD" ;;
   "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
+  "pr list"*) printf '%s' "${STUB_OPEN_PR:-}" ;;
   "api graphql"*pullRequest*) printf '%s\n' "${STUB_GRAPHQL:-none}" ;;
   *"-X POST"*) echo "$*" >> "${STUB_POSTS:-/dev/null}"; echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
   "api repos/other/repo/contents/"*".md"*) echo "rule text" ;;
@@ -258,6 +259,13 @@ check "issue branch: pushes to the repo, opens a draft" "https://github.com/othe
 0" "$(op upstream feat/x)"
 check "draft with same-repo head" "1" "$(grep -c -- '--draft --base main --head feat/x ' "$STUB_LOG")"
 check "issue branch on the repo" "$(git rev-parse feat/x)" "$(git -C "$tmp/other/repo.git" rev-parse feat/x)"
+git commit -q --allow-empty -m more && git branch -q -f feat/x HEAD && git reset -q --hard HEAD~1
+: > "$STUB_LOG"
+check "rerun: pushes to my open PR, opens none" "https://github.com/other/repo/pull/8
+0" "$(STUB_OPEN_PR='https://github.com/other/repo/pull/8 me' op upstream feat/x)"
+check "rerun: no second PR" "" "$(cat "$STUB_LOG")"
+check "rerun: new commit on the repo" "$(git rev-parse feat/x)" "$(git -C "$tmp/other/repo.git" rev-parse feat/x)"
+check "refuses someone else's open PR from the branch" "2" "$(STUB_OPEN_PR='https://github.com/other/repo/pull/8 them' op upstream feat/x)"
 
 echo "# setup-fork.sh"
 setupfork="$skills/ssak-contrib/scripts/setup-fork.sh"
