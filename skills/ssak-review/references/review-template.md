@@ -53,6 +53,8 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 Review PR #<num> at effort <level, or "high (raised from medium: <signal>)">.
 - worktree: <worktree path> at head <head sha>  (already checked out; do all reads and commands inside it)
 - skill dir: <ssak-review skill dir>
+- fork PR: <no / yes, by <author>>
+- run code: <yes / no (read only: no install, lint, build or tests; use gh pr checks <num>)>
 - report language: <the user's language>
 - inline comments: <yes / no>
 Answer in your defined report format.

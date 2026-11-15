@@ -55,7 +55,8 @@ opens a draft PR per PASS issue → final report. With one issue the main agent 
 work itself and still runs a verifier. With `--herdr`, workers run as Claude Code panes
 in Herdr instead of subagents; verifiers stay subagents.
 
-**ssak-review**: `pr-worktree.sh` → review at the chosen effort (one reviewer per PR
+**ssak-review**: `pr-worktree.sh` → for a PR from someone else's fork, ask before
+running its code (read only otherwise) → review at the chosen effort (one reviewer per PR
 when there are several) → at `xhigh`, refuters for Critical and High findings → chat
 report, or inline comments through `post-review.sh` with `--comment` → cleanup.
 
@@ -81,6 +82,9 @@ user picks → `cleanup.sh remove`.
 The scripts are where the skills enforce safety, so a confused agent cannot get around
 them:
 
+- `pr-worktree.sh` says whether a PR head is in someone else's fork. The skill then
+  asks before it installs, lints, builds or tests that code, and reviews by reading
+  alone without a yes ([`references/untrusted-content.md`](../references/untrusted-content.md)).
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
   once per head.
 - `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Check out PR <n>'s head in a detached worktree at .claude/worktrees/ssak-review-<n> (reused on rerun).
-# Output: "<head sha> <path>"
+# Output: "<head sha> <path>", then "fork <yes|no> <author>". "fork yes" means the head is in someone else's fork:
+# its code is not run without the user's yes (references/untrusted-content.md).
 # Requires: bash, git, gh signed in (gh auth login).
 set -euo pipefail
 
@@ -9,6 +10,12 @@ n=${1:-}
 
 root=$(git rev-parse --show-toplevel)
 path="$root/.claude/worktrees/ssak-review-$n"
+
+# "<true|false> <author>", asked before anything is created so a failure leaves nothing behind
+pr=$(gh pr view "$n" --json isCrossRepository,author -q '"\(.isCrossRepository) \(.author.login)"')
+author=${pr#* }
+fork=no
+if [ "${pr%% *}" = true ] && [ "$author" != "$(gh api user -q .login)" ]; then fork=yes; fi
 
 # Keep worktrees out of the main checkout's git status (tracked files untouched)
 info="$(git rev-parse --git-common-dir)/info"
@@ -26,3 +33,4 @@ else
   git worktree add -q --detach "$path" "$sha" >&2
 fi
 echo "$sha $path"
+echo "fork $fork $author"
