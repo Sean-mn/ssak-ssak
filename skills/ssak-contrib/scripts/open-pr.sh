@@ -4,6 +4,8 @@
 # ssak/contrib-<n>: refuses (exit 2) to push to upstream unless the repo is my own.
 # Any other branch (ssak-issue): refuses unless <push-remote> is <owner/repo> itself and the branch is not
 # <base-branch> or the repo's default branch. Never force-pushes. Always opens a draft.
+# A rerun is safe: when I already have an open PR from this branch, it pushes to it and prints its URL instead of
+# opening another. It refuses (exit 2) when someone else has an open PR from that branch.
 # Output: the PR URL.
 # Requires: bash, git, gh signed in (gh auth login).
 set -euo pipefail
@@ -35,5 +37,14 @@ else
   head=$branch
 fi
 
+# An open PR from this head already: mine is reused, someone else's is not mine to push to
+owner=${repo%%/*}; [[ "$head" != *:* ]] || owner=${head%%:*}
+open=$(gh pr list -R "$repo" --head "$branch" --state open --json url,author,headRepositoryOwner \
+  -q ".[] | select((.headRepositoryOwner.login | ascii_downcase) == \"$(lc "$owner")\") | \"\(.url) \(.author.login)\"" | head -1)
+if [ -n "$open" ] && [ "$(lc "${open#* }")" != "$(lc "$me")" ]; then
+  echo "refused: ${open%% *} is ${open#* }'s open PR from $branch" >&2; exit 2
+fi
+
 GIT_TERMINAL_PROMPT=0 git -C "$path" push -q -u "$remote" "refs/heads/$branch" >&2
+if [ -n "$open" ]; then echo "already open, pushed to it" >&2; echo "${open%% *}"; exit 0; fi
 (cd "$path" && gh pr create -R "$repo" --draft --base "$base" --head "$head" --title "$title" --body-file "$body")

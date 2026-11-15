@@ -99,7 +99,8 @@ them:
   on the PR yet. It never pushes and never resolves a thread.
 - `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to
   the repo itself and never as its base or default branch. It never force-pushes and
-  always opens a draft.
+  always opens a draft. Run again, it pushes to the user's open PR from that branch
+  instead of opening a second one, and refuses when the open PR is someone else's.
 - `cleanup.sh` re-checks every id before removing it and skips RISKY items unless
   `--force`.
 - `make-worktrees.sh` is the only way ssak-issue creates worktrees, so branch names

@@ -14,7 +14,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/issue-status.sh <owner/repo> <issue#>`: prints state, assignees, labels, linked PRs (closing keyword, Development sidebar link, mentions), PRs linked in comments, claim-like comments and the last 10 comments.
 - `../ssak-issue/scripts/find-issues.sh <owner/repo> --beginner`: lists open beginner-labeled issues grouped as FREE, CLAIMED, NOT READY and TAKEN. Both scripts source `../ssak-issue/scripts/common.sh`.
 - `scripts/setup-fork.sh <owner/repo> <issue#> [base-branch]`: forks if needed, clones or reuses a clone, and creates `ssak/contrib-<issue#>`. Prints `fork`, `push-remote`, `base`, `path`, `branch` lines. Exit 3 means the clone has uncommitted changes.
-- `scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes the branch to the fork and opens a draft PR, the only way this skill pushes or opens PRs. Refuses (exit 2) to push to upstream, never force-pushes, prints the PR URL.
+- `scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes the branch to the fork and opens a draft PR, the only way this skill pushes or opens PRs. When you already have an open PR from the branch, it pushes to it and prints its URL instead. Refuses (exit 2) to push to upstream, never force-pushes, prints the PR URL.
 - `references/rules-checklist.md`: which rules to extract and when to stop.
 - `references/templates.md`: pre-flight summary, verifier brief, PR body, PR draft and final report.
 - `../../references/agent-model.md`: which model every agent runs on; ask first when the session model is above Opus.
