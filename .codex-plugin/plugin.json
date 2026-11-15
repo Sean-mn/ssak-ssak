@@ -11,8 +11,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "ssak-ssak",
-    "shortDescription": "Issue work, PR review, CI failures, open source contributions, Herdr panes",
-    "longDescription": "Personal harness skills: work on GitHub issues in parallel worktrees with a verifier, review PRs by effort level, find why CI failed on a PR, contribute to open source repos following their rules, delegate tasks to sibling Claude Code panes in Herdr, and clean up what these skills leave behind.",
+    "shortDescription": "Issue work, PR review, review replies, CI failures, open source contributions, Herdr panes",
+    "longDescription": "Personal harness skills: work on GitHub issues in parallel worktrees with a verifier, review PRs by effort level, answer the review comments on your own PR, find why CI failed on a PR, contribute to open source repos following their rules, delegate tasks to sibling Claude Code panes in Herdr, and clean up what these skills leave behind.",
     "developerName": "PARK HYEONMIN",
     "category": "Productivity",
     "capabilities": ["Interactive", "Read", "Write"],

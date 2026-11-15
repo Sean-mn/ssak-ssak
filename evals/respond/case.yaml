@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: respond
+execution:
+  prompt: 내 PR 42에 달린 리뷰 코멘트 반영하고 답글 달아줘.
+  allowed_tools: [Read, Glob, Grep, Skill]
+graders:
+  - name: fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ssak-respond"'

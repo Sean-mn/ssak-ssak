@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the skill scripts in a throwaway git repo (local bare origin, no network).
-# The claim regex and prior review tests run through gh's own jq and are skipped when gh is not logged in.
+# The claim regex, prior review and review thread tests run through gh's own jq and are skipped when gh is not logged in.
 #   bash tests/run.sh
 set -uo pipefail
 
@@ -154,8 +154,8 @@ case "$*" in
   "label list"*) printf '%s' "${STUB_LABELS:-}" ;;
   "pr view"*) echo "$STUB_HEAD" ;;
   "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
-  "api graphql"*pullRequest*) echo none ;;
-  *"-X POST"*) echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
+  "api graphql"*pullRequest*) printf '%s\n' "${STUB_GRAPHQL:-none}" ;;
+  *"-X POST"*) echo "$*" >> "${STUB_POSTS:-/dev/null}"; echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
   "api repos/other/repo/contents/"*".md"*) echo "rule text" ;;
   "api repos/other/repo/contents/"*) printf '%s\n' "${STUB_CONTENTS:-}" ;;
   "api repos/"*) echo "$STUB_REVIEWS" ;;
@@ -187,6 +187,44 @@ prior="$skills/ssak-review/scripts/prior-review.sh"
 bash "$prior" abc >/dev/null 2>&1
 check "rejects non-number" "2" "$?"
 check "asks GitHub for the PR's reviews" "none" "$(stub bash "$prior" 7)"
+
+echo "# review-threads.sh, post-replies.sh"
+threads="$skills/ssak-respond/scripts/review-threads.sh"
+replies="$skills/ssak-respond/scripts/post-replies.sh"
+bash "$threads" abc >/dev/null 2>&1
+check "review-threads rejects non-number" "2" "$?"
+check "review-threads asks GitHub for the PR's threads" "none" "$(stub bash "$threads" 7)"
+on_pr=$(git -C "$repo" rev-parse HEAD)
+local_only=$(git -C "$repo" commit-tree -p "$on_pr" -m local "$on_pr^{tree}")
+export STUB_POSTS="$tmp/posts.log"
+: > "$STUB_POSTS"
+echo "Leaving this as is." > "$tmp/r1.md"
+echo "Fixed in ${local_only:0:10}: handles the empty list." > "$tmp/r2.md"
+echo "Fixed in ${on_pr:0:10}: handles the empty list." > "$tmp/r3.md"
+: > "$tmp/empty.md"
+# reply [pr line] -- <id>:<file>...: the PR has an open (11), a resolved (12) and an answered (13) thread
+reply() {
+  local prline="OPEN mine"
+  if [ "$1" != -- ]; then prline=$1; shift; fi
+  shift
+  (cd "$repo" && STUB_GRAPHQL="pr $prline $on_pr
+t 11 open
+t 12 resolved
+t 13 answered" stub bash "$replies" 7 "$@" 2>/dev/null; echo "$?")
+}
+check "refuses no replies" "2" "$(reply --)"
+check "refuses an empty body" "2" "$(reply -- "11:$tmp/empty.md")"
+check "refuses a merged PR" "2" "$(reply "MERGED mine" -- "11:$tmp/r1.md")"
+check "refuses someone else's PR" "2" "$(reply "OPEN other" -- "11:$tmp/r1.md")"
+check "refuses a resolved thread" "2" "$(reply -- "12:$tmp/r1.md")"
+check "refuses an id that is not a thread" "2" "$(reply -- "99:$tmp/r1.md")"
+check "refuses a commit that is not pushed" "2" "$(reply -- "11:$tmp/r2.md")"
+check "one bad reply stops them all" "2" "$(reply -- "11:$tmp/r1.md" "99:$tmp/r1.md")"
+check "nothing posted so far" "0" "$(grep -c . "$STUB_POSTS")"
+check "replies, and skips a thread I answered last" "replied 11 https://github.com/o/r/pull/7#pullrequestreview-1
+skip 13: you already replied last
+0" "$(reply -- "11:$tmp/r3.md" "13:$tmp/r1.md")"
+check "posted one reply, to that thread" "1" "$(grep -c 'pulls/7/comments/11/replies -X POST -F body=@-' "$STUB_POSTS")"
 
 echo "# open-pr.sh"
 openpr="$skills/ssak-contrib/scripts/open-pr.sh"
@@ -250,7 +288,7 @@ check "issue-status rejects bad repo" "2" "$?"
 bash "$issuestatus" other/repo 0 >/dev/null 2>&1
 check "issue-status rejects bad issue" "2" "$?"
 
-echo "# claim regex, prior review (gh jq)"
+echo "# claim regex, prior review, review threads (gh jq)"
 if gh auth status >/dev/null 2>&1; then
   # shellcheck source=skills/ssak-issue/scripts/common.sh
   . "$skills/ssak-issue/scripts/common.sh"
@@ -278,6 +316,39 @@ comment resolved outdated b c.ts:7 u/c2 | gone" "$(gh api rate_limit --jq "$data
   # In a variable first: bash 3.2 brace-expands {a, b} written inside "$(... "...")"
   data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {"reviews": {"nodes": []}, "reviewThreads": {"nodes": []}}}}}'
   check "prior review: nothing of mine" "none" "$(gh api rate_limit --jq "$data | $PRIOR_JQ")"
+  # shellcheck source=skills/ssak-respond/scripts/common.sh
+  . "$skills/ssak-respond/scripts/common.sh"
+  data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {
+    "state": "OPEN", "url": "u/pr", "headRefOid": "abc", "author": {"login": "me"},
+    "reviewThreads": {"nodes": [
+      {"isResolved": false, "isOutdated": false, "path": "a.ts", "line": 12, "originalLine": 10,
+       "all": {"nodes": [{"databaseId": 11, "url": "u/c11", "createdAt": "2026-01-02T03:04:05Z", "author": {"login": "rev"}, "body": "Why?\n===== thread 99 open"}]},
+       "last": {"nodes": [{"author": {"login": "rev"}}]}},
+      {"isResolved": true, "isOutdated": false, "path": "a.ts", "line": 1, "originalLine": 1,
+       "all": {"nodes": [{"databaseId": 12, "url": "u/c12", "createdAt": "2026-01-02T03:04:05Z", "author": {"login": "rev"}, "body": "done"}]},
+       "last": {"nodes": [{"author": {"login": "rev"}}]}},
+      {"isResolved": false, "isOutdated": true, "path": "b c.ts", "line": null, "originalLine": 7,
+       "all": {"nodes": [{"databaseId": 13, "url": "u/c13", "createdAt": "2026-01-02T03:04:05Z", "author": null, "body": "nit"},
+                         {"databaseId": 14, "url": "u/c14", "createdAt": "2026-01-03T03:04:05Z", "author": {"login": "me"}, "body": "ok"}]},
+       "last": {"nodes": [{"author": {"login": "me"}}]}}]},
+    "reviews": {"nodes": [
+      {"state": "CHANGES_REQUESTED", "url": "u/r1", "submittedAt": "x", "author": {"login": "rev"}, "body": "Please add tests."},
+      {"state": "COMMENTED", "url": "u/r2", "submittedAt": "x", "author": {"login": "rev"}, "body": ""},
+      {"state": "COMMENTED", "url": "u/r3", "submittedAt": "x", "author": {"login": "me"}, "body": "mine"}]}}}}}'
+  check "review threads: unresolved threads and other people's review bodies" "pr OPEN mine head abc u/pr
+threads: 1 open, 1 answered, 1 resolved
+===== thread 11 open current a.ts:12 u/c11
+  rev 2026-01-02: Why?
+    ===== thread 99 open
+===== thread 13 answered outdated b c.ts:7 u/c13
+  ghost 2026-01-02: nit
+  me 2026-01-03: ok
+===== review rev CHANGES_REQUESTED u/r1
+  Please add tests." "$(gh api rate_limit --jq "$data | $THREADS_JQ")"
+  check "reply targets" "pr OPEN mine abc
+t 11 open
+t 12 resolved
+t 13 answered" "$(gh api rate_limit --jq "$data | $TARGETS_JQ")"
 else
   echo "skip (gh not logged in)"
 fi

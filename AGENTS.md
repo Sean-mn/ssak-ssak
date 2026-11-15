@@ -6,8 +6,8 @@ this first; follow links only when the task needs them.
 ## What ssak-ssak is
 
 A plugin for Claude Code, Codex and Antigravity (agy): skills and subagents for GitHub work. That covers
-issue work in parallel worktrees, PR review, CI failure triage, open source
-contributions, Herdr panes and cleanup. There is no app here. The product is the
+issue work in parallel worktrees, PR review, answering review comments, CI failure
+triage, open source contributions, Herdr panes and cleanup. There is no app here. The product is the
 Markdown instructions in `skills/` and `agents/` and the bash scripts beside them.
 
 **An agent following these skills must never lose the user's work or write to GitHub in
@@ -57,8 +57,9 @@ agents and scripts it points at, and the tests that cover them.
 
 ### Safety of what the skills do
 
-- GitHub writes go only through the skill's script: `post-review.sh` posts reviews and
-  `open-pr.sh` pushes and opens contrib PRs. Never tell an agent to call
+- GitHub writes go only through the skill's script: `post-review.sh` posts reviews,
+  `post-replies.sh` posts review thread replies and `open-pr.sh` pushes and opens
+  contrib PRs. Never tell an agent to call
   `gh pr review`, `gh pr create` or `git push` directly where a script exists. When a
   new write is needed, add a script that refuses unsafe input and test it.
 - Worktrees and `ssak/*` branches are removed only through `cleanup.sh`. Never
