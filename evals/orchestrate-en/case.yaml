@@ -1,7 +1,7 @@
 schema_version: "1.1"
-name: herdr-vague
+name: orchestrate-en
 execution:
-  prompt: herdr 사용해서 README 오타 고치는 작업 해줘.
+  prompt: "Open a new Claude Code pane in herdr and have it fix the typos in the README."
   allowed_tools: [Read, Glob, Grep, Skill]
 graders:
   - name: fires
