@@ -26,7 +26,7 @@ CHAT REPORT:
 <the "Chat report" from review-template.md, in the report language. Worktree line: "left to the main agent">
 
 INLINE COMMENTS: <only when the brief asks for them; otherwise "none">
-<a JSON array, one object per finding, body in the inline-template.md format and the PR description's language:
+<a JSON array, one object per finding (new findings only when the PR was reviewed before), body in the inline-template.md format and the PR description's language:
  [{"severity": "High", "path": "src/a.ts", "line": 12, "on_diff": true, "body": "..."}]
  "on_diff": false when the line is not in the PR diff, so the finding goes in the review body>
 ```

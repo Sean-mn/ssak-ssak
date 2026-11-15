@@ -56,7 +56,8 @@ work itself and still runs a verifier. With `--herdr`, workers run as Claude Cod
 in Herdr instead of subagents; verifiers stay subagents.
 
 **ssak-review**: `pr-worktree.sh` → for a PR from someone else's fork, ask before
-running its code (read only otherwise) → review at the chosen effort (one reviewer per PR
+running its code (read only otherwise) → `prior-review.sh` for what was already posted →
+review at the chosen effort (one reviewer per PR
 when there are several) → at `xhigh`, refuters for Critical and High findings → chat
 report, or inline comments through `post-review.sh` with `--comment` → cleanup.
 
@@ -86,7 +87,8 @@ them:
   asks before it installs, lints, builds or tests that code, and reviews by reading
   alone without a yes ([`references/untrusted-content.md`](../references/untrusted-content.md)).
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
-  once per head.
+  once per head. On a later head, `prior-review.sh` lists the earlier comments so the
+  skill posts only new findings.
 - `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to
   the repo itself and never as its base or default branch. It never force-pushes and
   always opens a draft.
