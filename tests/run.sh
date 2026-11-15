@@ -275,8 +275,9 @@ if gh auth status >/dev/null 2>&1; then
   check "prior review: my last review and my threads" "reviewed bbb u/new
 comment open current a.ts:12 u/c1 | **[High] x** breaks
 comment resolved outdated b c.ts:7 u/c2 | gone" "$(gh api rate_limit --jq "$data | $PRIOR_JQ")"
-  check "prior review: nothing of mine" "none" \
-    "$(gh api rate_limit --jq "{data: {viewer: {login: \"me\"}, repository: {pullRequest: {reviews: {nodes: []}, reviewThreads: {nodes: []}}}}} | $PRIOR_JQ")"
+  # In a variable first: bash 3.2 brace-expands {a, b} written inside "$(... "...")"
+  data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {"reviews": {"nodes": []}, "reviewThreads": {"nodes": []}}}}}'
+  check "prior review: nothing of mine" "none" "$(gh api rate_limit --jq "$data | $PRIOR_JQ")"
 else
   echo "skip (gh not logged in)"
 fi

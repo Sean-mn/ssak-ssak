@@ -68,7 +68,8 @@ Scripts run on all three of CI's test systems. Keep in mind:
 
 - **bash 3.2 on macOS** (CI uses the stock `/bin/bash`): no associative arrays, no
   `mapfile`/`readarray`, no `${x,,}`. An empty array under `set -u` needs
-  `${arr[@]+"${arr[@]}"}`.
+  `${arr[@]+"${arr[@]}"}`. Text with `{a, b}` written inside `"$(cmd "...")"` gets
+  brace-expanded; put it in a variable first.
 - **Git Bash on Windows**: it turns `\\` into `\` when calling `gh.exe`, so jq
   programs passed to `gh --jq` use `[.]`, `[0-9]`, `[[:space:]]` instead of
   backslashes (see `common.sh`). Paths may contain spaces, regex characters and
