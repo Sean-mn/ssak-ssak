@@ -16,8 +16,18 @@ trap 'rm -rf "$tmp"' EXIT
 # Isolate from the user's git config (signing, hooks, default branch)
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL="$tmp/gitconfig"
 printf '[user]\n\tname = t\n\temail = t@t\n[init]\n\tdefaultBranch = main\n' > "$GIT_CONFIG_GLOBAL"
-# gh stub keeps tests offline: pr-worktree.sh gets the local origin as the PR's repo, cleanup.sh's PR lookup fails
-mkdir "$tmp/bin" && printf '#!/bin/sh\n[ "$1 $2" = "repo view" ] && echo "%s" && exit 0\nexit 1\n' "$tmp/origin.git" > "$tmp/bin/gh" && chmod +x "$tmp/bin/gh"
+# gh stub keeps tests offline: pr-worktree.sh gets the local origin as the PR's repo and STUB_PR as
+# the PR's "<isCrossRepository> <author>" (I am "me"); cleanup.sh's PR lookup fails
+mkdir "$tmp/bin" && cat > "$tmp/bin/gh" <<EOF
+#!/bin/sh
+case "\$1 \$2" in
+  "repo view") echo "$tmp/origin.git" ;;
+  "pr view") echo "\${STUB_PR:-false me}" ;;
+  "api user") echo me ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$tmp/bin/gh"
 offline() { PATH="$tmp/bin:$PATH" "$@"; }
 
 # Regex characters and non-ASCII in the path: cleanup.sh once broke on "(x86)"
@@ -48,7 +58,10 @@ echo "# pr-worktree.sh"
 review="$skills/ssak-review/scripts/pr-worktree.sh"
 pr=$(git commit-tree -m pr "HEAD^{tree}")
 git push -q origin "$pr:refs/pull/7/head" 2>/dev/null
-check "checks out PR head" "$pr $wt/ssak-review-7" "$(offline bash "$review" 7 2>&1)"
+check "checks out PR head" "$pr $wt/ssak-review-7
+fork no me" "$(offline bash "$review" 7 2>&1)"
+check "someone else's fork" "fork yes them" "$(STUB_PR='true them' offline bash "$review" 7 2>&1 | tail -1)"
+check "my own fork" "fork no me" "$(STUB_PR='true me' offline bash "$review" 7 2>&1 | tail -1)"
 pr=$(git commit-tree -p "$pr" -m pr2 "HEAD^{tree}")
 git push -q origin "$pr:refs/pull/7/head" 2>/dev/null
 offline bash "$review" 7 >/dev/null 2>&1

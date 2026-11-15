@@ -20,6 +20,7 @@ Replace `<...>` with real values. Write messages to the user in the user's langu
 | Dev commands | <test / lint / build commands> | <...> |
 
 **You need to do**: <CLA signing, claiming comment, etc. "nothing" if none>
+**Runs on this machine**: <the install, test, lint and build commands step 4 will run in the clone; they are this repo's code>
 **Plan**: fork <me>/<name> (if not there), branch ssak/contrib-<issue#> from <base>, implement, verify, then show you the PR draft.
 ```
 Then ask whether to proceed.
