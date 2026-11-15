@@ -9,7 +9,7 @@
 - 
 
 ## Testing
-<!-- CI runs check.py and tests/run.sh. After changing a skill's description, also run the trigger evals:
+<!-- CI runs check.py, claude plugin validate and tests/run.sh. After changing a skill's description, also run the trigger evals:
      claude plugin eval . --runs 1 --ablation none --no-publish
      List what else you ran (e.g. a skill on a real repo) and the result. -->
 - 

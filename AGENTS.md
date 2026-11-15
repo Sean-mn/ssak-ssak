@@ -40,6 +40,7 @@ agents and scripts it points at, and the tests that cover them.
 4. **Implement** on a branch named `<type>/<short-slug>` from an up-to-date `main`.
 5. **Verify:**
    - `python .github/check.py` (needs PyYAML)
+   - `claude plugin validate .` (CI runs it too)
    - `bash tests/run.sh`
    - `shellcheck -S warning -x skills/*/scripts/*.sh tests/*.sh .github/*.sh` when a script changed
    - If a skill's `description` changed: `claude plugin eval . --runs 1 --ablation none --no-publish`
@@ -50,7 +51,7 @@ agents and scripts it points at, and the tests that cover them.
    the commit subject, and release notes group by its type.
 7. **PR:** `gh pr create` filling `.github/PULL_REQUEST_TEMPLATE.md` (Summary,
    Changes, Testing, Checklist).
-8. **CI green → merge** with squash. CI runs check.py and shellcheck, then
+8. **CI green → merge** with squash. CI runs check.py, `claude plugin validate` and shellcheck, then
    `tests/run.sh` on Ubuntu, Windows (Git Bash) and macOS (bash 3.2).
 
 ## Hard rules
