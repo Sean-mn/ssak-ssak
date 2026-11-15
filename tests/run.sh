@@ -69,6 +69,15 @@ check "rerun moves to new head" "$pr" "$(git -C "$wt/ssak-review-7" rev-parse HE
 check "main checkout still clean" "" "$(git status --porcelain)"
 offline bash "$review" abc >/dev/null 2>&1
 check "rejects non-number" "2" "$?"
+pr8=$(git commit-tree -m pr8 "HEAD^{tree}")
+git push -q origin "$pr8:refs/pull/8/head" 2>/dev/null
+pr7=$(git commit-tree -p "$pr" -m pr3 "HEAD^{tree}")
+git push -q origin "$pr7:refs/pull/7/head" 2>/dev/null
+offline bash "$review" 7 >/dev/null 2>&1 & offline bash "$review" 8 >/dev/null 2>&1 & wait
+check "parallel runs check out their own heads" "$pr7 $pr8" \
+  "$(git -C "$wt/ssak-review-7" rev-parse HEAD) $(git -C "$wt/ssak-review-8" rev-parse HEAD)"
+check "leaves no fetch refs behind" "" "$(git for-each-ref refs/ssak/)"
+git worktree remove "$wt/ssak-review-8"
 
 echo "# cleanup.sh"
 cleanup="$skills/ssak-clean-up/scripts/cleanup.sh"

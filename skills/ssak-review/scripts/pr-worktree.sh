@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Check out PR <n>'s head in a detached worktree at .claude/worktrees/ssak-review-<n> (reused on rerun).
+# Safe to run for several PRs at once: each run fetches into its own ref, never through FETCH_HEAD.
 # Output: "<head sha> <path>", then "fork <yes|no> <author>". "fork yes" means the head is in someone else's fork:
 # its code is not run without the user's yes (references/untrusted-content.md).
 # Requires: bash, git, gh signed in (gh auth login).
@@ -24,13 +25,16 @@ grep -qxF '.claude/worktrees/' "$info/exclude" 2>/dev/null || echo '.claude/work
 
 # Fetch from the repo gh resolves the PR in, so fork setups (origin = fork) still work
 url=$(gh repo view --json url -q .url)
-GIT_TERMINAL_PROMPT=0 git fetch -q "$url" "pull/$n/head"
-sha=$(git rev-parse FETCH_HEAD)
+# Into a ref of this PR's own: FETCH_HEAD is shared, so a parallel run for another PR could overwrite it
+ref="refs/ssak/review-$n"
+GIT_TERMINAL_PROMPT=0 git fetch -q "$url" "+pull/$n/head:$ref"
+sha=$(git rev-parse "$ref^{commit}")
 
 if [ -d "$path" ]; then
   git -C "$path" checkout -q --detach "$sha"
 else
   git worktree add -q --detach "$path" "$sha" >&2
 fi
+git update-ref -d "$ref"  # the worktree's HEAD keeps the commit now
 echo "$sha $path"
 echo "fork $fork $author"
