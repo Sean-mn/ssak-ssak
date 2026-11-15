@@ -16,6 +16,8 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
   to the skill folder, and check.py fails on a missing one.
 - Number the steps. Each step that can fail says what to tell the user and that the
   skill stops.
+- A usage shown on bad arguments is written as ``show the usage `/<name> <argument-hint>` ``,
+  with the frontmatter's `argument-hint` exactly; check.py compares the two.
 - Never pick a value the user must choose (effort, which issues, what to remove). Show
   the usage and stop instead.
 - Ask before anything outward-facing or destructive, and wait for the answer.
