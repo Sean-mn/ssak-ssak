@@ -72,6 +72,11 @@ for skill in sorted(root.glob("skills/*/SKILL.md")):
     raw_fm = skill.read_text(encoding="utf-8").split("---", 2)[1] if skill.read_text(encoding="utf-8").startswith("---") else ""
     if not re.search(r"(?m)^#\s*for:\s*\S", raw_fm):
         errors.append(f"{rel(skill)}: frontmatter is missing a '# for:' comment")
+    # The usage a skill shows on bad arguments is its argument-hint, so the two cannot drift apart
+    for usage in re.findall(r"usage `(/ssak-[\w-]+(?: [^`]*)?)`", skill.read_text(encoding="utf-8")):
+        want = f"/{skill.parent.name} {data.get('argument-hint', '')}".strip()
+        if usage != want:
+            errors.append(f"{rel(skill)}: usage '{usage}' does not match the argument-hint '{want}'")
 
 for case in sorted(root.glob("evals/*/case.yaml")):
     try:

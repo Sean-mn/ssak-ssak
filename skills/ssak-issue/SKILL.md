@@ -34,7 +34,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 2. If the only argument is `--find`, go to "Find issues" below.
 3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
 4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Agent model and worker effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
-5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] [--pr] | --find`). Drop duplicate numbers.
+5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage `/ssak-issue <issue#> [issue#...] [--pr] [--herdr [model] [effort]] | --find`. Drop duplicate numbers.
 
 ## Find issues (`--find`)
 1. Run `bash <skill dir>/scripts/find-issues.sh "$(gh repo view --json nameWithOwner -q .nameWithOwner)"`.
