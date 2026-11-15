@@ -17,6 +17,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
 - `../../agents/ssak-refuter.md`: refuter subagent instructions, used at `xhigh`.
 - `../../agents/ssak-reviewer.md`: reviewer subagent instructions, used for two or more PRs.
+- `../../references/agent-model.md`: which model every agent runs on; ask first when the session model is above Opus.
 
 ## Subagents
 - `ssak-refuter` (`ssak-ssak:ssak-refuter` when installed as a plugin) checks findings at `xhigh`.
@@ -102,8 +103,8 @@ Report to the user in chat using the "Chat report" format in `references/review-
 ## Two or more PRs: one reviewer per PR, then report together
 1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR, one at a time: concurrent runs share `FETCH_HEAD` and can check out another PR's head. Keep each `<head sha> <worktree path>`.
    - With no effort given, set each PR's effort as in step 1.5, from `gh pr view <pr> --json files,additions,deletions` and `gh pr diff <pr>`. PRs can end up at different efforts.
-   - Pick each reviewer's model from its PR's effort. `sonnet` at `low` or `medium` when `gh pr view <pr> --json files` shows no auth, payment, migration, deploy or infra, or secret-handling files. Otherwise no model, so the reviewer runs on the session model. Never pass a model stronger than the session's. Skip this when the subagent tool has no model option.
-2. Launch one `ssak-reviewer` per PR on its model, all in parallel, with the "Reviewer brief" from `references/review-template.md` and that PR's effort, including the raised reason if any. The worktrees already exist, so do not use the subagent tool's workspace isolation option. Handle each PR independently: a reviewer that fails or returns no report ends that PR as not reviewed, with the reason.
+   - Every reviewer and refuter runs on the model from `../../references/agent-model.md`, whatever the effort.
+2. Launch one `ssak-reviewer` per PR on that model, all in parallel, with the "Reviewer brief" from `references/review-template.md` and that PR's effort, including the raised reason if any. The worktrees already exist, so do not use the subagent tool's workspace isolation option. Handle each PR independently: a reviewer that fails or returns no report ends that PR as not reviewed, with the reason.
 3. At `xhigh`, as soon as a reviewer returns, launch one fresh `ssak-refuter` per Critical or High finding in its report, in parallel, with only the finding (file:line, claim, failure scenario) and that PR's worktree path. Do not wait for the other reviewers. Drop each `DISPROVED` finding from its PR's chat report, inline comments, counts and verdict. Reviewers cannot launch subagents, so the main agent does this.
 4. Remove all review worktrees in one call, as in step 3: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`. Fill in each chat report's Worktree line from its output.
 5. Deliver:

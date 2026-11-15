@@ -13,6 +13,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `../../agents/ssak-worker.md`: worker subagent instructions.
 - `../../agents/ssak-verifier.md`: verifier subagent instructions.
 - `../../agents/ssak-scout.md`: scout subagent instructions.
+- `../../references/agent-model.md`: which model every agent runs on; ask first when the session model is above Opus.
 - `scripts/base-branch.sh`: prints the ref to branch from. A develop-like branch that has commits the default branch lacks, otherwise the default branch (main).
 - `scripts/make-worktrees.sh <num>[:<branch>]...`: creates a `.claude/worktrees/ssak-issue-<num>` worktree per issue on `<branch>` (default `ssak/issue-<num>`).
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
@@ -31,7 +32,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 1. Check that the current directory is a git repo and `gh auth status` passes. If not, say why and stop.
 2. If the only argument is `--find`, go to "Find issues" below.
 3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
-4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Worker model and effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
+4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Agent model and worker effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
 5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage (`/ssak-issue <issue#> [issue#...] [--pr] | --find`). Drop duplicate numbers.
 
 ## Find issues (`--find`)
@@ -50,19 +51,19 @@ Name each issue's branch by the repo's own convention:
 ## Commit format
 Commit by the repo's own format too: a rule in the files above or a commitlint config, otherwise the pattern of `git log --oneline -20 <base>` (type and scope, a trailing `(#<num>)` or not). If no clear pattern shows up, use `<type>: <summary> (#<num>)`.
 
-## Worker model and effort
-Small work does not need the session's model. When grouping issues, pick each group's row from what you read:
+## Agent model and worker effort
+Every agent (worker, scout, verifier, Herdr pane) runs on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. Ask that question once, together with any questions about the issues, before the first agent starts.
 
-| Work | Model | Effort (`--herdr` without one) |
-|---|---|---|
-| No behavior change: typos, copy, comments | `sonnet` | `low` |
-| Docs, or a small fix in one or two files with clear acceptance criteria | `sonnet` | `medium` |
-| A bug with an unclear cause, several files, a new feature, a refactor, CI/build/deploy config, a dependency upgrade | session model | `high` |
-| Security or auth, migrations, concurrency, risk of data loss | session model | `xhigh` |
-| A coupled group | session model | the highest of its issues |
-| Fits no row, or the issue text is too vague to tell | session model | ask the user |
+With `--herdr` and no effort given, pick each group's effort from what you read:
 
-- Session model means passing no model, so the worker runs on this session's model. Never pass a model stronger than the session's. Skip the model column when the subagent tool has no model option.
+| Work | Effort |
+|---|---|
+| No behavior change: typos, copy, comments | `low` |
+| Docs, or a small fix in one or two files with clear acceptance criteria | `medium` |
+| A bug with an unclear cause, several files, a new feature, a refactor, CI/build/deploy config, a dependency upgrade | `high` |
+| Security or auth, migrations, concurrency, risk of data loss | `xhigh` |
+| A coupled group | the highest of its issues |
+| Fits no row, or the issue text is too vague to tell | ask the user |
 - The effort column applies only with `--herdr` and no effort given. Never pick `max`; only the user can.
 - "Ask the user": before launching, ask once for every such group together, naming each issue and why it was unclear. Launch the other groups meanwhile.
 
@@ -103,7 +104,7 @@ Copy this checklist into your reply and tick it as you go:
 ```
 - [ ] 1. Read issues, check dependencies, name branches, run make-worktrees.sh
 - [ ] 2. Scout issues that do not name their files
-- [ ] 3. Group coupled issues, pick models, tell the user
+- [ ] 3. Group coupled issues, tell the user
 - [ ] 4. Launch one worker per group (subagent or Herdr pane)
 - [ ] 5. Verify each DONE issue with a fresh verifier
 - [ ] 6. Rework each FAIL, at most 2 per issue; back to 5 after each
@@ -114,14 +115,14 @@ Copy this checklist into your reply and tick it as you go:
 
 1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
-3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. Pick each group's worker model and, with `--herdr` and no effort given, its effort (see "Worker model and effort"). Tell the user the coupled groups and each group's model (and effort, with `--herdr`) in one line before starting.
-4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group on its model, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
+3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` and no effort given, pick each group's effort (see "Agent model and worker effort"). Tell the user the coupled groups, the agent model (and each group's effort, with `--herdr`) in one line before starting.
+4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
 5. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
    - If the worker reports `DONE`, launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief".
 6. If verification returns `FAIL`, request a rework.
-   - Send the "Rework request" to the same worker with a message tool (`SendMessage` / `send_message`). If unavailable, or the worker ran on `sonnet`, start a new worker on the session model and include the previous worker's report.
+   - Send the "Rework request" to the same worker with a message tool (`SendMessage` / `send_message`). If unavailable, start a new worker on the same model and include the previous worker's report.
    - After the rework, verify again with a fresh verifier so it is not anchored on the earlier verdict.
    - At most 2 reworks per issue. If the third verification still fails, the issue ends as FAIL.
 7. When every issue is finished:
@@ -142,9 +143,9 @@ Only PASS issues get a PR; name the FAIL and BLOCKED ones that got none.
 Same steps as "Two or more issues", but each worker is a separate Claude Code session in a Herdr pane, so the user can watch and steer it. Verifiers stay subagents. Read `../../references/herdr.md` first; agent names are `issue-<num>` (the first issue's number for a coupled group). Only these steps change:
 - Step 4, launch: lay out every group's pane at once, as in "When the number of panes is known", each with its worktree path as `--cwd`. New tabs are labelled `ssak-issue-<n>`. Then for each group:
   1. Write the "Herdr worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`. That folder is git-excluded by `make-worktrees.sh`.
-  2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, `sonnet` where "Worker model and effort" picked it, otherwise this session's own full model ID. The effort is the one given after `--herdr`; without one, the group's pick from "Worker model and effort", or the user's answer.
+  2. Start it and prompt `Read <brief path> and follow it.`, as in "Starting and prompting an agent". The model is the one given after `--herdr` for every group; without one, the full model ID from `../../references/agent-model.md`. The effort is the one given after `--herdr`; without one, the group's pick from "Agent model and worker effort", or the user's answer.
 - Step 5, waiting: wait on each worker as in "Watching". On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
-- Step 6, rework: delete the old report file, then send the "Rework request" as a prompt, written first to `.claude/worktrees/ssak-issue-<num>.rework.md`, like the brief. A worker that "Worker model and effort" put on `sonnet` gets a new session on the session model instead (same effort, or one level up if it was picked, not given, at most `xhigh`), with the previous report in its brief, in a pane that replaces the old one ("Replacing a pane"); a model the user gave stays.
+- Step 6, rework: delete the old report file, then send the "Rework request" as a prompt, written first to `.claude/worktrees/ssak-issue-<num>.rework.md`, like the brief.
 - Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. After the final report, delete every issue's brief, rework and report files, including issues that ended `BLOCKED` or `FAIL` and worktrees that `cleanup.sh` kept, as in "Handoff files".
 
 ## Rules

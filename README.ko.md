@@ -39,7 +39,7 @@ git clone https://github.com/Sean-mn/ssak-ssak.git
 agy plugin install ./ssak-ssak
 ```
 
-업데이트: `git pull` 후 `agy plugin install ./ssak-ssak`을 다시 실행하세요. `ssak-scout`와 `ssak-verifier` 에이전트는 Antigravity가 받지 않는 `sonnet` 모델을 쓰므로 건너뛰고, 스킬이 그 작업을 범용 서브에이전트에서 실행해요.
+업데이트: `git pull` 후 `agy plugin install ./ssak-ssak`을 다시 실행하세요.
 
 ## 스킬
 

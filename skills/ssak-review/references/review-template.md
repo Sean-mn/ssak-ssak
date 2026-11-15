@@ -65,7 +65,7 @@ Shown first when two or more PRs were reviewed, followed by each PR's "Chat repo
 
 | PR | Effort | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
 |---|---|---|---|---|---|---|---|---|
-| #<num> <title> | <level, "high (raised: <signal>)" when raised> | <reviewer model, e.g. sonnet, opus> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
+| #<num> <title> | <level, "high (raised: <signal>)" when raised> | <reviewer model, e.g. opus> | <one line> | <n> | <n> | <n> | <n> | <review URL / nothing to post> |
 
 <Not reviewed: #<num>: <reason>. Omit when every PR was reviewed.>
 ```
