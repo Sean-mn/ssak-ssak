@@ -29,6 +29,13 @@ jobs:
           pip install --quiet pyyaml
           python .github/check.py
 
+      # Claude Code's own manifest, frontmatter and path checks. Warnings do not fail it, errors do.
+      # Pinned to a release a couple of weeks old; no login is needed.
+      - name: Claude Code plugin validate
+        env:
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+        run: npx --yes @anthropic-ai/claude-code@2.1.316 plugin validate .
+
       - name: Shell scripts
         run: |
           for f in skills/*/scripts/*.sh tests/*.sh .github/*.sh; do bash -n "$f"; done
