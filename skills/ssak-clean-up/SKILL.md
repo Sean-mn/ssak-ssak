@@ -10,8 +10,8 @@ argument-hint: "[id...]"
 Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
-- `scripts/cleanup.sh scan`: one line per item, `<id> <SAFE|RISKY> wt=<path|-> branch=<name|-> | <notes>`. Ids look like `issue-12`, `review-42`, `contrib-7`.
-- `scripts/cleanup.sh remove [--force] [--keep-branch] <id>...`: re-checks each id and removes its worktree and local branch. RISKY ids are skipped unless `--force`. `--keep-branch` removes only the worktree. ssak-issue runs `remove --keep-branch issue-<n>` when it finishes, and ssak-review runs `remove review-<n>`.
+- `scripts/cleanup.sh scan`: one line per item, `<id> <SAFE|RISKY> wt=<path|-> branch=<name|-> | <notes>`. Ids look like `issue-12`, `review-42`, `contrib-7`. An `issue-<n>` also lists the ssak-issue handoff files a stopped run left next to the worktrees (`handoff files: brief, report`).
+- `scripts/cleanup.sh remove [--force] [--keep-branch] <id>...`: re-checks each id and removes its worktree, local branch and handoff files. RISKY ids are skipped unless `--force`. `--keep-branch` removes only the worktree. ssak-issue runs `remove --keep-branch issue-<n>` when it finishes, and ssak-review runs `remove review-<n>`.
 
 SAFE means removing loses nothing: no uncommitted changes and every branch commit is on a remote. RISKY means uncommitted changes, commits that exist only locally, or a branch checked out somewhere.
 
