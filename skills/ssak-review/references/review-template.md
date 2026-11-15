@@ -1,6 +1,6 @@
 # ssak-review chat report template
 
-The report shown to the user in chat. Replace `<...>` with real values. Omit a severity section when it has no findings. What gets posted to GitHub with `--comment` is in `inline-template.md`.
+The report shown to the user in chat. Replace `<...>` with real values. Omit a severity section when it has no findings, and "Earlier review" when this is the first review. What gets posted to GitHub with `--comment` is in `inline-template.md`.
 
 ## Severity
 - 🔴 **Critical**: will break production or lose or expose data if merged. Must fix before merge.
@@ -36,6 +36,11 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 
 ### ⚪ Low
 ...
+
+### Earlier review
+Last reviewed at <short sha>: <review url>. The findings above are new since then.
+- ✅ fixed: `<path>:<line>` <short title> (<comment url>)
+- ⏳ still open: `<path>:<line>` <short title> (<comment url>)<", thread resolved" when its thread is resolved>
 
 ### Checks
 - Lint: <command> → <pass / n errors on changed lines, or "skipped: <reason>">

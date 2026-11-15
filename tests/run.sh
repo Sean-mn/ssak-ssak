@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the skill scripts in a throwaway git repo (local bare origin, no network).
-# The claim regex test runs through gh's own jq and is skipped when gh is not logged in.
+# The claim regex and prior review tests run through gh's own jq and are skipped when gh is not logged in.
 #   bash tests/run.sh
 set -uo pipefail
 
@@ -154,6 +154,7 @@ case "$*" in
   "label list"*) printf '%s' "${STUB_LABELS:-}" ;;
   "pr view"*) echo "$STUB_HEAD" ;;
   "pr create"*) echo "$*" > "$STUB_LOG"; echo https://github.com/other/repo/pull/9 ;;
+  "api graphql"*pullRequest*) echo none ;;
   *"-X POST"*) echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
   "api repos/other/repo/contents/"*".md"*) echo "rule text" ;;
   "api repos/other/repo/contents/"*) printf '%s\n' "${STUB_CONTENTS:-}" ;;
@@ -180,6 +181,12 @@ printf '{"commit_id": "old", "event": "COMMENT"}' > "$p"
 check "refuses a stale head" "2" "$(pr7)"
 printf '{"commit_id": "abc123", "event": "COMMENT"}' > "$p"
 check "refuses a second review of the head" "2" "$(STUB_REVIEWS=https://x pr7)"
+
+echo "# prior-review.sh"
+prior="$skills/ssak-review/scripts/prior-review.sh"
+bash "$prior" abc >/dev/null 2>&1
+check "rejects non-number" "2" "$?"
+check "asks GitHub for the PR's reviews" "none" "$(stub bash "$prior" 7)"
 
 echo "# open-pr.sh"
 openpr="$skills/ssak-contrib/scripts/open-pr.sh"
@@ -243,7 +250,7 @@ check "issue-status rejects bad repo" "2" "$?"
 bash "$issuestatus" other/repo 0 >/dev/null 2>&1
 check "issue-status rejects bad issue" "2" "$?"
 
-echo "# claim regex (gh jq)"
+echo "# claim regex, prior review (gh jq)"
 if gh auth status >/dev/null 2>&1; then
   # shellcheck source=skills/ssak-issue/scripts/common.sh
   . "$skills/ssak-issue/scripts/common.sh"
@@ -251,6 +258,25 @@ if gh auth status >/dev/null 2>&1; then
     "please assign this to me", "Thanks for the fix!", "Can it be fixed in 2.0?", "/takeover"]'
   check "claims" "true,true,true,true,true,false,false,false" \
     "$(gh api rate_limit --jq "$JQ_DEFS $cases | map(test(claim_re; \"i\") | tostring) | join(\",\")")"
+  # shellcheck source=skills/ssak-review/scripts/common.sh
+  . "$skills/ssak-review/scripts/common.sh"
+  data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {
+    "reviews": {"nodes": [{"state": "COMMENTED", "url": "u/old", "commit": {"oid": "aaa"}, "author": {"login": "me"}},
+      {"state": "APPROVED", "url": "u/other", "commit": {"oid": "ccc"}, "author": {"login": "them"}},
+      {"state": "COMMENTED", "url": "u/new", "commit": {"oid": "bbb"}, "author": {"login": "me"}},
+      {"state": "PENDING", "url": "u/draft", "commit": {"oid": "ddd"}, "author": {"login": "me"}}]},
+    "reviewThreads": {"nodes": [
+      {"isResolved": false, "isOutdated": false, "path": "a.ts", "line": 12, "originalLine": 10,
+       "comments": {"nodes": [{"url": "u/c1", "body": "**[High] x**\n\nbreaks", "author": {"login": "me"}}]}},
+      {"isResolved": true, "isOutdated": true, "path": "b c.ts", "line": null, "originalLine": 7,
+       "comments": {"nodes": [{"url": "u/c2", "body": "gone", "author": {"login": "me"}}]}},
+      {"isResolved": false, "isOutdated": false, "path": "a.ts", "line": 3, "originalLine": 3,
+       "comments": {"nodes": [{"url": "u/c3", "body": "theirs", "author": {"login": "them"}}]}}]}}}}}'
+  check "prior review: my last review and my threads" "reviewed bbb u/new
+comment open current a.ts:12 u/c1 | **[High] x** breaks
+comment resolved outdated b c.ts:7 u/c2 | gone" "$(gh api rate_limit --jq "$data | $PRIOR_JQ")"
+  check "prior review: nothing of mine" "none" \
+    "$(gh api rate_limit --jq "{data: {viewer: {login: \"me\"}, repository: {pullRequest: {reviews: {nodes: []}, reviewThreads: {nodes: []}}}}} | $PRIOR_JQ")"
 else
   echo "skip (gh not logged in)"
 fi

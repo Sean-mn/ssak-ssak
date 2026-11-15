@@ -49,7 +49,7 @@ jobs:
 
       - name: Script tests
         env:
-          GH_TOKEN: ${{ github.token }}  # the claim regex test runs through gh's jq
+          GH_TOKEN: ${{ github.token }}  # the claim regex and prior review tests run through gh's jq
         run: |
           if [ "$RUNNER_OS" = macOS ]; then export PATH="/bin:$PATH"; fi  # use the stock bash 3.2
           bash --version | head -1

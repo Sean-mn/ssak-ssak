@@ -11,6 +11,7 @@ Arguments: `$ARGUMENTS`
 
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`, then `fork <yes|no> <author>`. `fork yes` means the head is in someone else's fork.
+- `scripts/prior-review.sh <pr#>`: prints what you already posted on the PR, read only: `none`, or `reviewed <sha> <review url>` for your last review and one `comment <open|resolved> <current|outdated> <path>:<line> <comment url> | <start of the comment>` line per review thread you started.
 - `scripts/post-review.sh <pr#> <payload.json>`: posts one review, the only way this skill writes to GitHub. Refuses (exit 2) a non-`COMMENT` event, a `commit_id` that is not the PR head, or a head you already reviewed. Exit 3 means GitHub rejected the payload.
 - `../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`: removes review worktrees.
 - `references/review-template.md`: severity levels and the chat report shown to the user, plus the reviewer brief and multi-PR report for two or more PRs.
@@ -47,6 +48,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
    - `additions + deletions` is over 500.
 
    Otherwise keep `medium`. When raised, the report's effort reads `high (raised from medium: <signal>)`.
+6. Your earlier review: `bash <skill dir>/scripts/prior-review.sh <pr>`. `none` means this is the first review. Otherwise keep its lines for "Reviewing a PR again" in step 2: `reviewed <sha>` is the commit you last reviewed, and each `comment` line is a finding you already posted. `git -C <worktree> diff <sha>..HEAD` shows what changed since; if it fails (the branch was force-pushed), go by the whole diff.
 
 ## 2. Review by effort
 
@@ -72,6 +74,14 @@ At every level, look in this order:
 
 For `high` and `xhigh`, re-read the code behind every finding before reporting it and drop any you cannot back with a concrete scenario. For `xhigh`, launch one fresh `ssak-refuter` per Critical or High finding, in parallel, with only the finding (file:line, claim, failure scenario), the worktree path and `run code: yes` or `no` (`no` for a read-only fork PR); drop the finding if it returns `DISPROVED`.
 
+### Reviewing a PR again
+Only when step 1.6 found an earlier review. Review the whole diff as usual, then sort before delivering:
+- **Fixed**: an earlier comment whose problem is gone from the code at the head. Check the code; an `outdated` or `resolved` thread alone does not show it.
+- **Still open**: an earlier comment whose problem is still there. A finding of this review that is the same problem in the same place, even if the line moved, is that comment and not a new finding.
+- **New**: every other finding.
+
+Only new findings are numbered, counted by severity and, with `--comment`, posted. Never post a still-open finding again, whether its thread is `open` or `resolved`: it already has a thread. Fixed and still-open ones go under "Earlier review" in the chat report, and the verdict names the still-open ones whose thread is `open`.
+
 Do not report: style preferences no rule file states, problems in code the PR did not touch and does not affect, or speculation without a failure scenario. Lint errors on lines the PR did not change go under "Pre-existing" in the report, not as findings.
 
 ## 3. Clean up
@@ -89,7 +99,7 @@ If something looks wrong but no rule file or template covers it, do not report i
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
 ### With `--comment`
-1. Build one review from `references/inline-template.md`: an "Inline comment" per finding. A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number.
+1. Build one review from `references/inline-template.md`: an "Inline comment" per finding, new findings only when you reviewed the PR before (see "Reviewing a PR again"). A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number.
 2. The review body follows "Review body" in the template:
    - With `--summary`: the full summary.
    - Without it: empty, except findings that cannot be placed on a diff line, which always go in the body.
@@ -101,7 +111,7 @@ Report to the user in chat using the "Chat report" format in `references/review-
 4. If GitHub rejects the payload (exit 3, message on stderr):
    - Some comment positions are invalid: move those comments into the body and run it again.
    - A body is required: run it again with the one-line body from the template.
-5. If there are no findings: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
+5. If there are no findings, or none of them is new: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
 6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
 
 ## Two or more PRs: one reviewer per PR, then report together
