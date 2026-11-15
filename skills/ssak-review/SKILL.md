@@ -115,7 +115,7 @@ Report to the user in chat using the "Chat report" format in `references/review-
 6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
 
 ## Two or more PRs: one reviewer per PR, then report together
-1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR, one at a time: concurrent runs share `FETCH_HEAD` and can check out another PR's head. Keep each `<head sha> <worktree path>` and `fork` line.
+1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR; the runs may go in parallel. Keep each `<head sha> <worktree path>` and `fork` line.
    - For the `fork yes` PRs, ask once for all of them together before any reviewer starts, as in step 1.3. Start the other PRs' reviewers meanwhile.
    - With no effort given, set each PR's effort as in step 1.5, from `gh pr view <pr> --json files,additions,deletions` and `gh pr diff <pr>`. PRs can end up at different efforts.
    - Every reviewer and refuter runs on the model from `../../references/agent-model.md`, whatever the effort.
