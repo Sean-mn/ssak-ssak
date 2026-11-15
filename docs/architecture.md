@@ -69,6 +69,11 @@ PR draft, user confirms → `open-pr.sh` opens a draft PR.
 PR-caused, base already failing, flaky or config → suggested fix → for PR causes, user
 confirms → fix and a local commit on the PR branch (never pushed).
 
+**ssak-respond**: `review-threads.sh` lists the unresolved review threads of the user's
+own PR → sort each into fix, already fixed, answer, decline or ask → plan, user
+confirms → fixes as local commits on the PR branch (never pushed) → reply drafts, user
+pushes and confirms → `post-replies.sh` posts one reply per thread.
+
 **ssak-orchestrate**: inside a Herdr pane only. Splits a sibling pane, starts Claude Code
 there with the given model and effort, hands it the task with a report request →
 waits in the background (`herdr agent wait`) while the main pane stays free → reports
@@ -89,6 +94,9 @@ them:
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
   once per head. On a later head, `prior-review.sh` lists the earlier comments so the
   skill posts only new findings.
+- `post-replies.sh` replies only in unresolved review threads of the user's own open
+  PR, never twice in a row in one thread, and refuses a reply that names a commit not
+  on the PR yet. It never pushes and never resolves a thread.
 - `open-pr.sh` pushes `ssak/contrib-<n>` only to the fork, and an ssak-issue branch only to
   the repo itself and never as its base or default branch. It never force-pushes and
   always opens a draft.

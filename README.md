@@ -2,7 +2,7 @@ English | [한국어](README.ko.md)
 
 # ssak-ssak
 
-Personal skill harness for Claude Code, Codex and Antigravity: issue work, PR review, open source contributions and cleanup.
+Personal skill harness for Claude Code, Codex and Antigravity: issue work, PR review, review replies, open source contributions and cleanup.
 
 [![version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSean-mn%2Fssak-ssak%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=blue)](.claude-plugin/plugin.json)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-D97757)](#claude-code)
@@ -52,6 +52,7 @@ Update with `git pull`, then `agy plugin install ./ssak-ssak` again.
 | `/ssak-orchestrate [model] [effort] <task> [--no-wait]` | Opens a new Claude Code pane in Herdr and hands it the task. Without a model or effort it uses the main pane's. Waits in the background and reports the result when the pane finishes; `--no-wait` only starts it. `list`, `read <name>` and `send <name> <text>` check on it. Needs Herdr. |
 | `/ssak-review [low\|medium\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | Reviews PRs for production impact, lint and team rules. With no effort given, starts at medium and moves to high for risky PRs (migrations, auth, infra, large diffs). Two or more are reviewed in parallel, one reviewer agent per PR. `--comment` posts inline comments. Reviewing a PR again posts only new findings and tells you which earlier ones were fixed. For a PR from someone else's fork it asks before running that PR's code (install, lint, build, tests) and otherwise reviews by reading alone. |
 | `/ssak-ci-doctor [owner/repo] [pr#]` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Without a number, uses the PR you just worked on or the current branch's. When the PR caused it and you approve, fixes it with a local commit on the PR branch; it never pushes. |
+| `/ssak-respond [pr#]` | Answers the review comments on your own PR. Sorts each unresolved thread into fix, answer or decline, fixes the code with local commits after you approve the plan, then posts a reply in each thread after you approve the drafts. Without a number, uses the current branch's PR. It never pushes and never resolves a thread. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |
 | `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
 | `/ssak-clean-up [id...]` | Removes worktrees and branches the skills left behind. Asks first. |

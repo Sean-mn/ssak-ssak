@@ -52,6 +52,7 @@ agy plugin install ./ssak-ssak
 | `/ssak-orchestrate [model] [effort] <task> [--no-wait]` | Herdr에 새 Claude Code 창을 띄우고 작업을 맡겨요. 모델이나 effort를 빼면 메인 창의 값을 써요. 백그라운드로 기다렸다가 끝나면 결과를 알려주고, `--no-wait`이면 띄우기만 해요. `list`, `read <name>`, `send <name> <text>`로 진행 상황을 봐요. Herdr가 필요해요. |
 | `/ssak-review [low\|medium\|high\|xhigh] <pr#> [pr#...] [--comment] [--summary]` | 운영 영향, lint, 팀 규칙 중심으로 PR을 리뷰해요. effort를 생략하면 medium으로 시작하고, 위험한 PR(마이그레이션, auth, 인프라, 큰 diff)은 high로 올려요. 2개 이상이면 PR마다 리뷰 에이전트가 병렬로 리뷰해요. `--comment`면 인라인 코멘트를 달아요. 같은 PR을 다시 리뷰하면 새로 찾은 것만 달고, 이전 지적 중 무엇이 고쳐졌는지 알려줘요. 다른 사람 포크에서 온 PR은 그 PR의 코드를 실행(설치, lint, 빌드, 테스트)하기 전에 먼저 묻고, 허락이 없으면 읽기만으로 리뷰해요. |
 | `/ssak-ci-doctor [owner/repo] [pr#]` | PR의 CI가 왜 실패했는지 찾아요. 실패한 체크마다 첫 진짜 에러, PR 탓인지 여부, 고칠 방법을 알려줘요. 번호를 빼면 방금 작업한 PR이나 현재 브랜치의 PR을 봐요. PR 탓인 실패는 승인하면 PR 브랜치에 로컬 커밋으로 고쳐요. push는 하지 않아요. |
+| `/ssak-respond [pr#]` | 내 PR에 달린 리뷰 코멘트에 대응해요. 해결되지 않은 스레드를 수정, 답변, 거절로 나누고, 계획을 승인하면 로컬 커밋으로 고친 뒤, 답글 초안을 승인하면 스레드마다 답글을 달아요. 번호를 빼면 현재 브랜치의 PR을 써요. push와 스레드 resolve는 하지 않아요. |
 | `/ssak-contrib <owner/repo> <issue#>` | 레포의 기여 규칙과 AI 정책을 지켜 오픈소스에 기여하고, 승인을 받은 뒤 draft PR을 열어요. |
 | `/ssak-contrib <owner/repo> --find` | 아무도 맡지 않은 입문자용 이슈를 보여줘요. |
 | `/ssak-clean-up [id...]` | 스킬들이 남긴 worktree와 브랜치를 정리해요. 지우기 전에 물어봐요. |
