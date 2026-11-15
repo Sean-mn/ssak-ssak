@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the skill scripts in a throwaway git repo (local bare origin, no network).
-# The claim regex, prior review and review thread tests run through gh's own jq and are skipped when gh is not logged in.
+# The tests marked (gh jq) run through gh's own jq and are skipped when gh is not logged in.
 #   bash tests/run.sh
 set -uo pipefail
 
@@ -311,6 +311,92 @@ bash "$issuestatus" bad 1 >/dev/null 2>&1
 check "issue-status rejects bad repo" "2" "$?"
 bash "$issuestatus" other/repo 0 >/dev/null 2>&1
 check "issue-status rejects bad issue" "2" "$?"
+
+echo "# find-issues.sh, issue-status.sh grouping (gh jq)"
+if gh auth status >/dev/null 2>&1; then
+  # A gh that answers from fixtures but runs each --jq program through the real gh's own jq
+  realgh=$(command -v gh)
+  mkdir "$tmp/bin3" && cat > "$tmp/bin3/gh" <<EOF
+#!/bin/sh
+case "\$1 \$2" in
+  "api user") echo me; exit 0 ;;
+  "label list") printf '%s\n' "\$STUB_LABELS"; exit 0 ;;
+  "api graphql") fixture=\$(cat "\$STUB_FIXTURE") ;;
+  "pr view") fixture='{"state": "MERGED", "author": {"login": "them"}}' ;;
+  *) exit 1 ;;
+esac
+prog=
+while [ \$# -gt 0 ]; do case \$1 in -q | --jq) prog=\$2; shift ;; esac; shift; done
+exec "$realgh" api rate_limit --jq "\$fixture | (\$prog)"
+EOF
+  chmod +x "$tmp/bin3/gh"
+  jqstub() { PATH="$tmp/bin3:$PATH" "$@"; }
+  # pr <number> <state> <author> <repo>, issue <number> <title> <assignees> <labels> <closing PRs> <timeline> <comments>
+  pr() { printf '{"number": %s, "url": "u/%s", "state": "%s", "author": {"login": "%s"}, "repository": {"nameWithOwner": "%s"}}' "$1" "$1" "$2" "$3" "$4"; }
+  logins() { local o='' l; for l in "$@"; do o="$o${o:+, }{\"login\": \"$l\"}"; done; echo "$o"; }
+  issue() {
+    printf '{"number": %s, "title": "%s", "url": "u/i%s", "state": "OPEN", "stateReason": null, "updatedAt": "2026-01-0%sT00:00:00Z",' "$1" "$2" "$1" "$1"
+    printf ' "assignees": {"nodes": [%s]}, "labels": {"nodes": [%s]},' "$3" "$4"
+    printf ' "closedByPullRequestsReferences": {"nodes": [%s]}, "timelineItems": {"nodes": [%s]}, "comments": {"totalCount": %s, "nodes": [%s]}}' "$5" "$6" "$7" "${8:-}"
+  }
+  comment() { printf '{"createdAt": "2026-01-02T00:00:00Z", "author": {"login": "%s"}, "body": "%s"}' "$1" "$2"; }
+  { printf '{"data": {"search": {"issueCount": 42, "nodes": ['
+    issue 1 "Plain bug" "" "" "" "" 0; printf ,
+    issue 2 "Mine" "$(logins me)" "" "" "" 0; printf ,
+    issue 3 "Claimed" "" "" "" "" 1 "$(comment them "I will take this one")"; printf ,
+    issue 4 "Triage" "" '{"name": "needs triage"}' "" "" 0; printf ,
+    issue 5 "Closing PR" "" "" "$(pr 50 OPEN them other/repo)" "" 0; printf ,
+    issue 6 "Assigned" "$(logins them)" "" "" "" 0; printf ,
+    issue 7 "Closed PR" "" "" "$(pr 70 CLOSED them other/repo)" "" 0; printf ,
+    issue 8 "Mentioned elsewhere" "" "" "" "{\"__typename\": \"CrossReferencedEvent\", \"source\": $(pr 80 OPEN them fork/repo)}" 0; printf ,
+    issue 9 "Mentioned here" "" "" "" "{\"__typename\": \"CrossReferencedEvent\", \"source\": $(pr 90 OPEN them other/repo)}" 0
+    printf ']}}}'; } > "$tmp/search.json"
+  check "find-issues groups issues" "query: repo:other/repo is:issue is:open sort:updated-desc
+matched 42, showing 9
+FREE:
+  #2 Mine · updated 2026-01-02 · 0 comments · assigned to you
+  #1 Plain bug · updated 2026-01-01 · 0 comments
+  #7 Closed PR · updated 2026-01-07 · 0 comments
+  #8 Mentioned elsewhere · updated 2026-01-08 · 0 comments
+CLAIMED (read the claim before taking):
+  #3 Claimed · updated 2026-01-03 · 1 comments
+    claim: 2026-01-02 them: I will take this one
+NOT READY (labels say wait):
+  #4 Triage [needs triage] · updated 2026-01-04 · 0 comments
+    needs triage
+TAKEN (skip):
+  #5 Closing PR · updated 2026-01-05 · 0 comments
+    PR other/repo#50 OPEN by them [closes]
+  #6 Assigned · updated 2026-01-06 · 0 comments
+    assigned: them
+  #9 Mentioned here · updated 2026-01-09 · 0 comments
+    PR other/repo#90 OPEN by them [mentions]" "$(STUB_FIXTURE="$tmp/search.json" jqstub bash "$findissues" other/repo)"
+  check "find-issues beginner query" "query: repo:other/repo is:issue is:open sort:updated-desc no:assignee label:\"good first issue\",\"help wanted\"" \
+    "$(STUB_LABELS="$(printf 'bug\ngood first issue\nhelp wanted')" STUB_FIXTURE="$tmp/search.json" jqstub bash "$findissues" other/repo --beginner | head -1)"
+  { printf '{"data": {"repository": {"issue": '
+    issue 3 "Claimed" "$(logins them)" '{"name": "bug"}' "$(pr 50 CLOSED them other/repo)" "{\"__typename\": \"ConnectedEvent\", \"subject\": $(pr 51 OPEN them other/repo)}" 2 \
+      "$(comment them "I will take this one"), $(comment rev "Maybe see https://github.com/up/lib/pull/12 and #13, not #3")"
+    printf '}}}'; } > "$tmp/issue.json"
+  check "issue-status reports what decides the issue" "me: me
+issue: Claimed
+url: u/i3
+state: OPEN 
+assignees: them
+labels: bug
+linked PRs (closes = closing keyword, linked/unlinked = Development sidebar, mentions = PR references the issue):
+  other/repo#50 CLOSED by them [closes]
+  other/repo#51 OPEN by them [linked]
+claim comments:
+  2026-01-02 them: I will take this one
+last comments (2 of 2):
+  2026-01-02 them: I will take this one
+  2026-01-02 rev: Maybe see https://github.com/up/lib/pull/12 and #13, not #3
+PRs linked in comments:
+  other/repo#13 MERGED by them
+  up/lib#12 MERGED by them" "$(STUB_FIXTURE="$tmp/issue.json" jqstub bash "$issuestatus" other/repo 3)"
+else
+  echo "skip (gh not logged in)"
+fi
 
 echo "# claim regex, prior review, review threads (gh jq)"
 if gh auth status >/dev/null 2>&1; then
