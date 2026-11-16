@@ -11,7 +11,7 @@ and hands parts of the work to subagents defined in `agents/`.
 | Skill | `skills/<name>/SKILL.md` | The steps the main agent follows: parse arguments, ask, run scripts, launch subagents, report. |
 | References | `skills/<name>/references/*.md` | Templates the skill fills in: agent briefs, report and comment formats, checklists. Loaded only when a step needs them. |
 | Scripts | `skills/<name>/scripts/*.sh` | Everything that must be deterministic or must refuse unsafe input: creating worktrees, finding issues, posting reviews, pushing, cleanup. |
-| Subagents | `agents/*.md` | One job each, with `model: inherit` and fixed effort and tools in frontmatter; [`references/agent-model.md`](../references/agent-model.md) picks the model. They report back in a fixed English format. |
+| Subagents | `agents/*.md` | One job each, with `model: inherit` and fixed effort and tools in frontmatter; [`references/agent-model.md`](../references/agent-model.md) picks the model, and puts the scout on Sonnet 5.5. They report back in a fixed English format. |
 | Manifests | `.claude-plugin/`, `.codex-plugin/`, `.antigravity-plugin/`, `.agents/plugins/` | Plugin and marketplace metadata. Claude Code finds `agents/` and `skills/` on its own; Codex reads `skills` from its manifest; Antigravity finds `skills/` and `agents/` at the plugin root from `.antigravity-plugin/plugin.json`. |
 
 Skills share scripts across folders: `ssak-contrib` uses `ssak-issue`'s
@@ -24,7 +24,7 @@ Skills share scripts across folders: `ssak-contrib` uses `ssak-issue`'s
 | --- | --- | --- | --- | --- |
 | `ssak-worker` | ssak-issue (2+ issues) | inherit / medium | yes, in its worktree | Implements one issue or a coupled group, commits, reworks on FAIL. |
 | `ssak-verifier` | ssak-issue, ssak-contrib | inherit / high | no | Checks requirements, runs test/build/lint, returns PASS or FAIL. |
-| `ssak-scout` | ssak-issue (2+ issues) | inherit / medium | no | Maps an issue to the files and functions it would change, so coupled issues go to one worker. |
+| `ssak-scout` | ssak-issue (2+ issues) | Sonnet 5.5, passed by the skill / medium | no | Maps an issue to the files and functions it would change, so coupled issues go to one worker. |
 | `ssak-reviewer` | ssak-review (2+ PRs) | inherit / session | no | Reviews one PR in its worktree and returns the report. Starts without CLAUDE.md. |
 | `ssak-refuter` | ssak-review at `xhigh` | inherit / medium | no | Tries to disprove one Critical or High finding. Starts without CLAUDE.md. |
 

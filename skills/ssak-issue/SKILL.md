@@ -53,7 +53,7 @@ Name each issue's branch by the repo's own convention:
 Commit by the repo's own format too: a rule in the files above or a commitlint config, otherwise the pattern of `git log --oneline -20 <base>` (type and scope, a trailing `(#<num>)` or not). If no clear pattern shows up, use `<type>: <summary> (#<num>)`.
 
 ## Agent model and worker effort
-Every agent (worker, scout, verifier, Herdr pane) runs on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. Ask that question once, together with any questions about the issues, before the first agent starts.
+The worker, the verifier and every Herdr pane run on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. The scout runs on Sonnet 5.5, as "The scout" there says. Ask that question once, together with any questions about the issues, before the first agent starts.
 
 With `--herdr` and no effort given, pick each group's effort from what you read:
 
@@ -115,7 +115,7 @@ Copy this checklist into your reply and tick it as you go:
 ```
 
 1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
-2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
+2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) on Sonnet 5.5 (pass `sonnet` as the model; see "The scout" in `../../references/agent-model.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
 3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` and no effort given, pick each group's effort (see "Agent model and worker effort"). Tell the user the coupled groups, the agent model (and each group's effort, with `--herdr`) in one line before starting.
 4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
