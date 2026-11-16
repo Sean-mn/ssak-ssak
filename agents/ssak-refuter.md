@@ -26,6 +26,7 @@ You try to disprove one review finding. The brief gives you the finding (file:li
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
+Write short sentences with one fact each, in the active voice. Use the same word for the same thing. Leave out filler, praise and hedging; say plainly what you did not check.
 ```
 VERDICT: STANDS | DISPROVED
 Scenario: <the scenario you checked, one line>

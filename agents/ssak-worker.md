@@ -24,6 +24,7 @@ If the issue is ambiguous, leaves a choice open (scope, design, behavior), or yo
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
+Write short sentences with one fact each, in the active voice. Use the same word for the same thing. Leave out filler, praise and hedging; say plainly what you did not check.
 ```
 STATUS: DONE | BLOCKED
 Summary: <what changed and why, 2-4 lines>
