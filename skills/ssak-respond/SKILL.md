@@ -84,3 +84,4 @@ Finish with the "Final report" from `references/templates.md`, in the user's lan
 - Never push; give `git push` for the user to run, and run it only if the user asks. Never amend, rebase or force-push.
 - Never resolve a thread, request a review, or edit, close or merge the PR. The reviewer decides when a thread is done.
 - Write replies in the language of the thread, in the tone `references/templates.md` sets.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.

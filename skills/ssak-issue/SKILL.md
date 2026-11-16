@@ -155,3 +155,4 @@ Same steps as "Two or more issues", but each worker is a separate Claude Code se
 - Push and open PRs only with `--pr`, only after the user's yes, and only through `open-pr.sh`. Without `--pr`, the user decides after reading the report. Never close or comment on issues.
 - The main agent relays the verifier's verdict as is. With two or more issues it does not edit issue branches itself.
 - Remove worktrees only through `cleanup.sh remove --keep-branch` as in the steps above, never with `--force`. Never delete issue branches.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.

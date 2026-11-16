@@ -34,3 +34,4 @@ SAFE means removing loses nothing: no uncommitted changes and every branch commi
 - Only use `cleanup.sh`. Never delete worktrees or branches with other commands, never `rm -rf` a folder.
 - Never delete remote branches, close PRs, or touch anything outside the current repo. If pushed `ssak/*` branches remain on the remote, mention them and the command `git push origin --delete <branch>` without running it.
 - `ssak-contrib` clones live in their own folders. To clean those, run this skill inside that clone.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.
