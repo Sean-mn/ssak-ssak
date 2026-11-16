@@ -4,12 +4,15 @@ What gets posted to GitHub with `--comment`: one inline comment per finding, plu
 
 Write in the language of the PR description. In Korean, write in 해요체 (e.g. "통과해요", "추가하면 좋겠어요"), both in comments and the review body.
 
+Write like a human reviewer talking to a teammate: plain sentences, no `[Severity]` tag and no bold title. Carry the severity in the wording, so the author can tell what blocks the merge:
+- Critical / High: say it must be fixed before merging (e.g. "머지 전에 꼭 막아야 할 것 같아요").
+- Medium: say it is worth fixing in this PR (e.g. "이번 PR에서 같이 고치면 좋겠어요").
+- Low: say it is optional (e.g. "급한 건 아니지만 ~하면 좋겠어요").
+
 ## Inline comment
 One comment per finding, on the line the finding points at. Keep what is visible short; everything else goes in the folded `<details>`.
 ````
-**[<Severity>] <short title>**
-
-<What goes wrong and the impact, in 1 sentence.>
+<What goes wrong and the impact, then how urgent it is, in 1-2 sentences.>
 
 ```suggestion
 <replacement lines>
@@ -28,9 +31,7 @@ One comment per finding, on the line the finding points at. Keep what is visible
 
 Example (Korean):
 ````
-**[Low] 보이지 않는 문자만으로 된 이름이 통과해요**
-
-`ㅤ`(U+3164) 같은 채움 문자만으로 팀 이름을 만들 수 있어요.
+`ㅤ`(U+3164) 같은 채움 문자만으로 팀 이름을 만들 수 있어요. 급한 건 아니지만 패턴에 같이 막아두면 좋겠어요.
 
 ```suggestion
 @Pattern(regexp = "(?sU).*[^\\s\\p{Cf}\\u115F\\u1160\\u3164\\uFFA0\\u2800].*", message = "팀 이름은 공백일 수 없습니다.")
@@ -47,7 +48,7 @@ Example (Korean):
 
 ## Review body
 ### Without `--summary` (default)
-No body. Exception: findings that could not be placed on a diff line go in the body, each in the inline comment format with `path:line` added to the title.
+No body. Exception: findings that could not be placed on a diff line go in the body, each in the inline comment format starting with `path:line`.
 
 If GitHub rejects an empty body, use one line instead:
 ```
@@ -63,7 +64,7 @@ ssak-review (effort: <level>): <n> inline comment(s)
 |---|---|---|---|
 | <n> | <n> | <n> | <n> |
 
-<Findings that could not be placed on a diff line, in the inline comment format with `path:line` added.>
+<Findings that could not be placed on a diff line, in the inline comment format, each starting with `path:line`.>
 
 ### Checks
 - Lint: <command> → <result>
