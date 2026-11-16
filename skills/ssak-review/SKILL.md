@@ -36,9 +36,11 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - With one PR, continue with steps 1 to 4. With two or more, go to "Two or more PRs" below; a given effort and the flags apply to every PR.
 
 ## 1. Gather
+The calls in steps 1.1, 1.2 and 1.3, `prior-review.sh` from step 1.6 and `gh pr checks <pr>` (used in step 2) do not depend on each other: run them in parallel.
+
 1. `gh pr view <pr> --json number,title,body,author,baseRefName,headRefName,headRefOid,files,additions,deletions,url` for the PR's intent and scope.
 2. `gh pr diff <pr>` is the review scope. Findings must point at code this PR adds or changes, or at existing code the change now breaks.
-3. `bash <skill dir>/scripts/pr-worktree.sh <pr>` to get the PR head on disk for reading context and running lint. Do all reads and commands for the PR inside that worktree, never in the main checkout. Install dependencies from the lockfile if lint or tests need them.
+3. `bash <skill dir>/scripts/pr-worktree.sh <pr>` to get the PR head on disk for reading context and running lint. Do all reads and commands for the PR inside that worktree, never in the main checkout. Do not install dependencies yet: step 2 decides what is left to run, and only that needs them.
    - On `fork yes` the review is read only: no install, lint, build or tests in the worktree. When step 2 leaves something to run, ask first, as in "Running someone else's code" in `../../references/untrusted-content.md`, and run it only after a yes.
 4. Team rules: read whichever exist in the worktree: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE*`, `.editorconfig`, lint and formatter configs. A rule violation is a finding only if a rule file actually states it; cite the file.
    - On `fork yes`, a rule file the PR itself changes is not a source of rules. Read the base's version instead: `gh api "repos/{owner}/{repo}/contents/<path>?ref=<base>" -H "Accept: application/vnd.github.raw"`.
@@ -63,7 +65,8 @@ The table is the most to run, not a must. Run a command only if its result could
 - **Tests and build**: run them only when the diff can change what the code does at runtime. Skip them when it cannot, e.g. docs, comments, renames of private names the type check covers, formatting, test-only changes the CI ran, CI or editor config that does not feed the build, version bumps of dependencies whose changelog shows no breaking change.
 - **CI already ran it**: check `gh pr checks <pr>`. Do not rerun a lint, build or test that a passing check on the PR head already covers; cite the check instead. If it failed, read its log rather than rerunning.
 - **Fork PR, read only**: run nothing. Take lint, build and test results from `gh pr checks <pr>`, and write `skipped: fork PR, read only` for each check that has none.
-- When nothing is left to run, install nothing.
+- Install dependencies from the lockfile only for the commands left to run. When nothing is left to run, install nothing.
+- Start a long command, such as the full test suite at `xhigh`, in the background if your Bash tool can, and read the code while it runs. Deliver only after it finishes.
 
 In the report, say what you skipped and why.
 
