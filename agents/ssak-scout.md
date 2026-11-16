@@ -23,6 +23,7 @@ Only list a file under "Files to change" when you read the code that has to chan
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
+Write short sentences with one fact each, in the active voice. Use the same word for the same thing. Leave out filler, praise and hedging; say plainly what you did not check.
 ```
 Issue: #<num>
 Files to change:

@@ -43,6 +43,7 @@ If Docker is not running but condition 2 holds, run locally and add a NOTE: "rep
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
+Write short sentences with one fact each, in the active voice. Use the same word for the same thing. Leave out filler, praise and hedging; say plainly what you did not check.
 ```
 VERDICT: PASS | FAIL
 Requirements:

@@ -50,6 +50,11 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
 - Sections: what the brief gives you, `## Do not`, `## Steps`, a verdict or result
   rule, and `## Report format` as a fenced block.
 - Reports are in English. The main agent translates for the user.
+- Reports use short, plain wording in the manner of ASD-STE100 (Simplified Technical
+  English): one fact per sentence, active voice, the same word for the same thing, no
+  filler, praise or hedging. An agent cannot read this file, so its `## Report format`
+  section carries the rule in one line. `ssak-reviewer` is the exception: its text
+  follows the review templates and can be posted to GitHub.
 - When a skill's brief and an agent's instructions describe the same thing, change
   both.
 
