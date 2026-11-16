@@ -30,6 +30,10 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
   `../../references/asking-the-user.md` and do not copy it. Only an explicit "go with your
   recommendation" from the user lets the skill decide alone. A subagent cannot ask, so
   its agent file says to report the question and options instead of guessing.
+- What a skill tells the user in chat is short and plain, in any language. The how lives
+  in `references/plain-wording.md`; a skill's Rules point at it with
+  `../../references/plain-wording.md` and do not copy it. Text posted to GitHub keeps
+  its own template.
 - Long multi-phase skills get a checklist near the top that the agent ticks off.
 - End with a `## Rules` section of hard limits: what the skill never does.
 - Put long templates (briefs, reports, comment formats) in `references/` so they load

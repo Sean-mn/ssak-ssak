@@ -133,3 +133,4 @@ Report to the user in chat using the "Chat report" format in `references/review-
 - Write GitHub comments in the language of the PR description, in the tone `references/inline-template.md` sets.
 - Remove the review worktree only through `cleanup.sh` as in step 3, never with `--force`.
 - With two or more PRs, only the main agent posts to GitHub and removes worktrees.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.

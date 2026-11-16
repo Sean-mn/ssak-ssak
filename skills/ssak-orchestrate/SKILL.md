@@ -67,3 +67,4 @@ Prompt it as in steps 3 and 4 of "Starting and prompting an agent" in `../../ref
 - Close only panes this skill started, and only when the user asks, as in "Closing" in `../../references/herdr.md`.
 - Never answer a `blocked` agent's approval or question on the user's behalf.
 - An agent is finished only when its report file exists; `idle` alone is not enough.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.

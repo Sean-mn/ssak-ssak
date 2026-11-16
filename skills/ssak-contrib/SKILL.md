@@ -84,3 +84,4 @@ Run `setup-fork.sh <owner/repo> <issue#> [base-branch]`, passing the target bran
 - Nothing visible on GitHub happens before the user's yes in step 2 (fork) and step 6 (push and PR).
 - Always open the PR as a draft. Never mark it ready, request reviewers, or comment on the issue or PR.
 - Never push to upstream, never force-push, never sign a CLA or claim an issue for the user.
+- Tell the user things in short, plain wording, as in `../../references/plain-wording.md`: one fact per sentence, no filler or hedging, and say what you did not check.
