@@ -44,7 +44,7 @@ without judgment calls: exact commands, explicit stop conditions, fixed output f
   (`tools: [Read, Grep, Glob, Bash]`) because Antigravity rejects a comma string.
   Every agent uses `model: inherit`; never pin a model in an agent file (Antigravity
   rejects aliases like `sonnet`). Skills pick the model through
-  [`references/agent-model.md`](../references/agent-model.md).
+  [`references/agent-model.md`](../references/agent-model.md), which puts the scout on Sonnet 5.5.
 - `omitClaudeMd: true` for agents that need only their brief or read the repo's rule
   files themselves (reviewer, refuter).
 - Sections: what the brief gives you, `## Do not`, `## Steps`, a verdict or result
