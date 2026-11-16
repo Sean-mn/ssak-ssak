@@ -1,7 +1,7 @@
 ---
 name: ssak-contrib
-description: Contribute to someone else's open source repo by issue. Reads the repo's contribution rules (including any AI policy), checks nobody else has the issue, forks and branches, implements, verifies against the repo's rules, then opens a draft PR after the user approves. With --find, lists beginner-friendly issues nobody has taken. Use for "/ssak-contrib owner/repo 123", "/ssak-contrib owner/repo --find" or "contribute to owner/repo issue 123".
-argument-hint: "<owner/repo> <issue#> | <owner/repo> --find"
+description: Contribute to someone else's open source repo by issue. Reads the repo's contribution rules (including any AI policy), checks nobody else has the issue, forks and branches, implements, verifies against the repo's rules, then opens a draft PR after the user approves. With --find, or a repo named with no issue, lists beginner-friendly issues nobody has taken. Use for "/ssak-contrib owner/repo 123", "/ssak-contrib owner/repo --find", "contribute to owner/repo issue 123" or "I want to contribute to https://github.com/owner/repo".
+argument-hint: "<owner/repo> <issue#> | <owner/repo> [--find]"
 # for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
@@ -37,7 +37,8 @@ Copy this into your reply and tick it as you go:
 
 ## 0. Parse arguments
 - Accept `owner/repo 123`, `owner/repo #123`, an issue URL `https://github.com/owner/repo/issues/123`, or `owner/repo --find`.
-- Anything else: stop and show the usage `/ssak-contrib <owner/repo> <issue#> | <owner/repo> --find`.
+- A repo with no issue (`owner/repo` or `https://github.com/owner/repo`) means `owner/repo --find`.
+- Anything else: stop and show the usage `/ssak-contrib <owner/repo> <issue#> | <owner/repo> [--find]`.
 - Check `gh auth status` passes. If not, say why and stop.
 
 ## Find issues (`--find`)

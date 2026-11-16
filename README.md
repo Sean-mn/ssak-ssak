@@ -54,7 +54,7 @@ Update with `git pull`, then `agy plugin install ./ssak-ssak` again.
 | `/ssak-ci-doctor [owner/repo] [pr#]` | Finds why CI failed on a PR: the first real error of each failing check, whether the PR caused it, and the fix. Without a number, uses the PR you just worked on or the current branch's. When the PR caused it and you approve, fixes it with a local commit on the PR branch; it never pushes. |
 | `/ssak-respond [pr#]` | Answers the review comments on your own PR. Sorts each unresolved thread into fix, answer or decline, fixes the code with local commits after you approve the plan, then posts a reply in each thread after you approve the drafts. Without a number, uses the current branch's PR. It never pushes and never resolves a thread. |
 | `/ssak-contrib <owner/repo> <issue#>` | Contributes to an open source repo by its rules and AI policy, then opens a draft PR after you approve. |
-| `/ssak-contrib <owner/repo> --find` | Lists beginner-friendly issues nobody has taken. |
+| `/ssak-contrib <owner/repo> [--find]` | Lists beginner-friendly issues nobody has taken. A repo with no issue does the same. |
 | `/ssak-clean-up [id...]` | Removes worktrees, branches and leftover handoff files the skills left behind. Asks first. |
 
 In Claude Code a command may show as `/ssak-ssak:ssak-issue`. In Codex and Antigravity, ask by name, e.g. "use ssak-issue --find".
