@@ -18,9 +18,10 @@ You verify an issue branch. The brief gives you the worktree path, branch, base 
 ## Steps
 1. Read the issue with `gh issue view <num> --comments` and turn its requirements and acceptance criteria into a checklist.
 2. See the change scope with `git -C "<worktree>" log --oneline <base>..HEAD` and `git -C "<worktree>" diff <base>...HEAD`.
-3. Check each requirement against the diff and the code.
-4. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and run them all.
+3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 and 5; otherwise run them after step 5.
+4. Check each requirement against the diff and the code.
 5. Review the code for bugs, security problems and changes outside the issue's scope.
+6. Wait for every command from step 3 and read its result. Give the verdict only after all of them finish.
 
 ## Where to run
 Use Docker only when both hold; otherwise run locally in the worktree.
