@@ -2,6 +2,20 @@
 
 Replace `<...>` with real values.
 
+## Plan (to the user, before any work)
+Write it in the user's language. One block per issue; for a coupled group, one block per issue and the group line on each.
+```
+## ssak-issue plan (base: <base>)
+
+### #<num> <title>
+- **Asks for**: <what the issue wants, one or two lines>
+- **Change**: <files or functions, as `path` or `path:function`>
+- **How**: <the approach, one to three lines; the other option and why not, if there was one>
+- **Checks**: <tests to add or run, build, lint>
+- **Branch**: <branch> · **Group**: <alone / with #<num>: why> · **Effort**: <with --herdr; omit otherwise>
+```
+Then ask whether to go ahead, with every open question and the agent model question in the same call.
+
 ## Scout brief (ssak-scout)
 ```
 Map issue #<num> to the code it would change.
@@ -19,6 +33,8 @@ Work on issue #<num>.
 - read the issue: gh issue view <num> --comments
 - scout map (a starting point, check it yourself; omit the line if there is none):
 <full scout report>
+- Plan (approved by the user; follow it):
+<the issue's plan block, with the user's changes>
 - User decisions (the user's answers to open questions; "go with your recommendation" if they said so; omit if none):
 <answers>
 Implement it, commit, then answer in your defined report format.
@@ -32,6 +48,8 @@ Work on coupled issues #<num>, #<num>... in this order. <why they are coupled, o
 Commit format: <the repo's commit format, e.g. fix(api): <summary> (#<num>)>
 Scout maps (a starting point, check them yourself; omit for issues without one):
 <full scout report per issue>
+Plan (approved by the user; follow it):
+<each issue's plan block, with the user's changes>
 User decisions (the user's answers to open questions; omit if none):
 <answers>
 For a stacked issue, first run git -C "<its worktree>" merge --ff-only <earlier branch> after the earlier issue is committed.

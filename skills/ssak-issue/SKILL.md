@@ -19,7 +19,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `scripts/make-worktrees.sh <num>[:<branch>]...`: creates a `.claude/worktrees/ssak-issue-<num>` worktree per issue on `<branch>` (default `ssak/issue-<num>`).
 - `scripts/find-issues.sh <owner/repo> [--beginner]`: lists open issues grouped as FREE, CLAIMED, NOT READY and TAKEN. TAKEN means a linked PR (closing keyword or Development link) or another assignee.
 - `scripts/common.sh`: shared helpers, sourced by the scripts above and by ssak-contrib.
-- `references/templates.md`: agent briefs and the final report format.
+- `references/templates.md`: the plan shown before any work, agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
 - `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
 - `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`; when you already have an open PR from the branch, it pushes to it and prints its URL instead. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
@@ -53,7 +53,7 @@ Name each issue's branch by the repo's own convention:
 Commit by the repo's own format too: a rule in the files above or a commitlint config, otherwise the pattern of `git log --oneline -20 <base>` (type and scope, a trailing `(#<num>)` or not). If no clear pattern shows up, use `<type>: <summary> (#<num>)`.
 
 ## Agent model and worker effort
-The worker, the verifier and every Herdr pane run on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. The scout runs on Sonnet 5.5, as "The scout" there says. Ask that question once, together with any questions about the issues, before the first agent starts.
+The worker, the verifier and every Herdr pane run on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. The scout runs on Sonnet 5.5, as "The scout" there says. Ask that question with the plan (see "Plan"), before the first worker or verifier starts.
 
 With `--herdr` and no effort given, pick each group's effort from what you read:
 
@@ -66,7 +66,7 @@ With `--herdr` and no effort given, pick each group's effort from what you read:
 | A coupled group | the highest of its issues |
 | Fits no row, or the issue text is too vague to tell | ask the user |
 - The effort column applies only with `--herdr` and no effort given. Never pick `max`; only the user can.
-- "Ask the user": before launching, ask once for every such group together, naming each issue and why it was unclear. Launch the other groups meanwhile.
+- "Ask the user": ask with the plan (see "Plan"), naming each such issue and why it was unclear.
 
 ## Dependencies
 Find what each issue waits on, after reading it:
@@ -85,27 +85,36 @@ The user works on the issues with you; do not settle open questions alone. Ask w
 - the issue text, its comments and the code disagree;
 - a worker or the verifier reports a question (`BLOCKED`, or an open decision in its report), or the work would touch more than the issue names.
 
-How: as in `../../references/asking-the-user.md`. Before launching, read every issue and ask once for all of them together, naming each issue. Launch groups with nothing open meanwhile. Put the user's answers in the brief under "User decisions". When a worker is `BLOCKED` on a question, ask it the same way, then send the answer as a rework-style prompt (a new brief with the answer; no verifier run in between).
+How: as in `../../references/asking-the-user.md`. Before any work, read every issue and ask once for all of them together with the plan (see "Plan"), naming each issue. Put the user's answers in the brief under "User decisions". When a worker is `BLOCKED` on a question, ask it the same way, then send the answer as a rework-style prompt (a new brief with the answer; no verifier run in between).
 
 If the user said to go with your recommendation, decide as that file says, and say in the report which choices you made.
 
+## Plan
+Before any code changes, tell the user what you will do and how, and wait for a yes:
+1. Fill the "Plan" from `references/templates.md`, one block per issue: what the issue asks, which files or functions change (from the code you read or the scout map), the approach, and the checks you will run.
+2. Ask once, as in `../../references/asking-the-user.md`: whether to go ahead, together with every open question from "Asking the user" and the agent model question. The user may change a plan, ask for another approach or drop an issue.
+3. Start no work without a yes. If the user said to go with your recommendation, show the plan and go ahead without waiting.
+4. With two or more issues, put the approved plan, with the user's changes, in each worker brief under "Plan". For an issue the user drops, remove its worktree with `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>` and name it in the report.
+5. If the work needs more than the plan says, or another approach, stop and ask before going on. A worker reports `BLOCKED` instead.
+
 ## One issue: the main agent works directly
-1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues". Ask about anything open, as in "Asking the user", before making the worktree; ask again during the work when a new question comes up.
+1. Read it with `gh issue view <num> --comments` and check its "Dependencies". If the answer adds an issue, continue from "Two or more issues".
 2. Pick the branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>`. The output is `base <ref>` and `issue <num> <branch> <worktree path>`. Only this script creates the worktree: never create one with a worktree tool given a `name` (e.g. `EnterWorktree`), which makes its own branch named after the worktree. To move the session into it, use such a tool only with the printed `path`.
 3. Work only inside that worktree: run every command as `cd "<worktree path>" && ...` and edit files by absolute path under it. Do not touch the main checkout. A fresh worktree may lack dependencies; install them from the lockfile if needed.
-4. Implement as usual and run the project's tests, build and lint.
-5. Commit in the repo's format (see "Commit format").
-6. Launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief", giving your own summary and test results as the worker report. On `FAIL`, fix the reasons with new commits (no amend) and verify again with a fresh verifier. At most 2 reworks; if the third verification still fails, the issue ends as FAIL.
-7. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
-8. With `--pr`, open the PR (see "Open PRs").
-9. Report using the final report format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
+4. Read the code the issue touches, then show the plan and ask about anything open, as in "Plan". Change nothing before the yes; ask again during the work when a new question comes up.
+5. Implement as usual and run the project's tests, build and lint.
+6. Commit in the repo's format (see "Commit format").
+7. Launch `ssak-verifier` (`../../agents/ssak-verifier.md`) with the "Verifier brief", giving your own summary and test results as the worker report. On `FAIL`, fix the reasons with new commits (no amend) and verify again with a fresh verifier. At most 2 reworks; if the third verification still fails, the issue ends as FAIL.
+8. From the directory you ran `make-worktrees.sh` in (not the worktree), remove the worktree but keep the branch: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>`. Never pass `--force`; if it skips the worktree (uncommitted changes), it stays and goes in the report.
+9. With `--pr`, open the PR (see "Open PRs").
+10. Report using the final report format in `references/templates.md`. If a verifier FAIL reason was not covered by the issue, the brief or the repo's rules, propose one new rule for it at the end and add it only after the user approves.
 
 ## Two or more issues: work, verify, report
 Copy this checklist into your reply and tick it as you go:
 ```
 - [ ] 1. Read issues, check dependencies, name branches, run make-worktrees.sh
 - [ ] 2. Scout issues that do not name their files
-- [ ] 3. Group coupled issues, tell the user
+- [ ] 3. Group coupled issues, show the plan, wait for yes
 - [ ] 4. Launch one worker per group (subagent or Herdr pane)
 - [ ] 5. Verify each DONE issue with a fresh verifier
 - [ ] 6. Rework each FAIL, at most 2 per issue; back to 5 after each
@@ -116,7 +125,7 @@ Copy this checklist into your reply and tick it as you go:
 
 1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) on Sonnet 5.5 (pass `sonnet` as the model; see "The scout" in `../../references/agent-model.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
-3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` and no effort given, pick each group's effort (see "Agent model and worker effort"). Tell the user the coupled groups, the agent model (and each group's effort, with `--herdr`) in one line before starting.
+3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` and no effort given, pick each group's effort (see "Agent model and worker effort"). Then show the plan with the coupled groups, the agent model (and each group's effort, with `--herdr`), and wait for the yes (see "Plan").
 4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
 5. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
