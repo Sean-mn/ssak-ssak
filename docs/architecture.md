@@ -59,7 +59,7 @@ in Herdr instead of subagents; verifiers stay subagents.
 running its code (read only otherwise) → `prior-review.sh` for what was already posted →
 review at the chosen effort (one reviewer per PR
 when there are several) → at `xhigh`, refuters for Critical and High findings → chat
-report, or inline comments through `post-review.sh` with `--comment` → cleanup.
+report, or with `--comment` one review per finding through `post-review.sh` → cleanup.
 
 **ssak-contrib**: `guidelines.sh` and `issue-status.sh` (read only) → pre-flight
 summary, user confirms → `setup-fork.sh` → implement → verifier with the repo's rules →
@@ -92,7 +92,8 @@ them:
   asks before it installs, lints, builds or tests that code, and reviews by reading
   alone without a yes ([`references/untrusted-content.md`](../references/untrusted-content.md)).
 - `post-review.sh` posts only `COMMENT` reviews, only on the current PR head, and only
-  once per head. On a later head, `prior-review.sh` lists the earlier comments so the
+  once per head: it checks every payload (one comment each, on a diff line) before it
+  posts any. On a later head, `prior-review.sh` lists the earlier comments so the
   skill posts only new findings.
 - `post-replies.sh` replies only in unresolved review threads of the user's own open
   PR, never twice in a row in one thread, and refuses a reply that names a commit not
