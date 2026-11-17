@@ -61,7 +61,7 @@ Run `setup-fork.sh <owner/repo> <issue#> [base-branch]`, passing the target bran
 ## 4. Implement
 - Install dependencies and run the commands the rules give, not guessed ones: the ones the pre-flight summary named. Ask before any other, and before one that does more than install, build, test or lint, as in `../../references/untrusted-content.md`.
 - Change only what the issue needs. No drive-by refactors, reformatting or dependency bumps.
-- Add tests, docs and changelog or changeset entries the rules ask for.
+- Add tests, docs and changelog or changeset entries the rules ask for. Tests use the kinds the repo already has (framework, folders, unit vs integration vs e2e), unless the issue asks for another kind.
 - Commit in the repo's commit format. Use `git commit -s` when DCO is required. Add the AI disclosure in commits only if the policy asks for it there.
 
 ## 5. Verify
