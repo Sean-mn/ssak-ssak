@@ -2,6 +2,12 @@
 # Shared jq for the ssak-review scripts (sourced, not run).
 # No "\\" in jq programs: Git Bash on Windows turns it into "\" when calling gh.exe. Use [[:space:]] and the like.
 
+# Over the pulls/<n>/files pages, for post-review.sh: the lines a comment can sit on, as
+# "<path>\t<first>\t<last>" per diff hunk on the new-file side. A file with no patch (binary, too large) has none.
+HUNKS_JQ='.[] | .filename as $f | (.patch // "") |
+  [scan("@@ -[0-9,]+ [+]([0-9]+)(,([0-9]+))? @@")][] | (.[0] | tonumber) as $s |
+  [$f, $s, $s + ((.[2] // "1") | tonumber) - 1] | @tsv'
+
 # Over the prior-review.sh query result: my last submitted review, then one line per review thread I started.
 PRIOR_JQ='
 def oneline(n): gsub("[[:space:]]+"; " ") | .[:n];

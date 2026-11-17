@@ -175,6 +175,7 @@ case "$*" in
   *"-X POST"*) echo "$*" >> "${STUB_POSTS:-/dev/null}"; echo https://github.com/o/r/pull/7#pullrequestreview-1 ;;
   "api repos/other/repo/contents/"*".md"*) echo "rule text" ;;
   "api repos/other/repo/contents/"*) printf '%s\n' "${STUB_CONTENTS:-}" ;;
+  "api repos/"*"/files"*) printf '%s\n' "${STUB_HUNKS:-}" ;;
   "api repos/"*) echo "$STUB_REVIEWS" ;;
   *) exit 1 ;;
 esac
@@ -185,19 +186,36 @@ export STUB_HEAD=abc123 STUB_REVIEWS='' STUB_LOG="$tmp/pr-create.log"
 
 echo "# post-review.sh"
 post="$skills/ssak-review/scripts/post-review.sh"
-p="$tmp/payload.json"
-pr7() { stub bash "$post" 7 "$p" 2>/dev/null; echo "$?"; }
-printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "a", "line": 1, "body": "say \\"event\\": \\"APPROVE\\""}]}' > "$p"
-check "posts a COMMENT review" "https://github.com/o/r/pull/7#pullrequestreview-1
-0" "$(pr7)"
-printf '{"commit_id": "abc123", "event": "APPROVE"}' > "$p"
-check "refuses APPROVE" "2" "$(pr7)"
-printf '{"commit_id": "abc123", "event": "COMMENT", "event": "REQUEST_CHANGES"}' > "$p"
-check "refuses two events" "2" "$(pr7)"
-printf '{"commit_id": "old", "event": "COMMENT"}' > "$p"
-check "refuses a stale head" "2" "$(pr7)"
-printf '{"commit_id": "abc123", "event": "COMMENT"}' > "$p"
-check "refuses a second review of the head" "2" "$(STUB_REVIEWS=https://x pr7)"
+p="$tmp/payload.json"; p2="$tmp/payload2.json"; pb="$tmp/body.json"
+STUB_HUNKS=$(printf 'a\t1\t5\nb c\t10\t12'); export STUB_HUNKS
+pr7() { : > "$STUB_POSTS"; stub bash "$post" 7 "$@" 2>/dev/null; echo "$?"; }
+export STUB_POSTS="$tmp/posts.log"
+comment() { printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "%s", "line": %s, "side": "RIGHT", "body": "say \\"event\\": \\"APPROVE\\""}]}' "$1" "$2"; }
+comment a 1 > "$p"; comment "b c" 12 > "$p2"
+printf '{"commit_id": "abc123", "event": "COMMENT", "body": "summary"}' > "$pb"
+check "posts one review per payload, in order" "https://github.com/o/r/pull/7#pullrequestreview-1
+https://github.com/o/r/pull/7#pullrequestreview-1
+https://github.com/o/r/pull/7#pullrequestreview-1
+0" "$(pr7 "$p" "$p2" "$pb")"
+check "posted each payload" "3" "$(grep -c -- '-X POST --input' "$STUB_POSTS")"
+check "refuses a line off the diff, posts nothing" "2
+0" "$(comment a 6 > "$p2"; pr7 "$p" "$p2"; grep -c . "$STUB_POSTS")"
+check "refuses a path not in the diff" "2" "$(comment z 1 > "$p2"; pr7 "$p2")"
+printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "a", "line": 1, "side": "RIGHT", "body": "x"}, {"path": "a", "line": 2, "side": "RIGHT", "body": "y"}]}' > "$p2"
+check "refuses two comments in one payload" "2" "$(pr7 "$p2")"
+printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "a", "line": 1, "side": "LEFT", "body": "x"}]}' > "$p2"
+check "refuses side LEFT" "2" "$(pr7 "$p2")"
+printf '{"commit_id": "abc123", "event": "COMMENT", "body": ""}' > "$p2"
+check "refuses no comment and no body" "2" "$(pr7 "$p2")"
+printf '{"commit_id": "abc123", "event": "APPROVE", "body": "x"}' > "$p2"
+check "refuses APPROVE" "2" "$(pr7 "$p2")"
+printf '{"commit_id": "abc123", "event": "COMMENT", "event": "REQUEST_CHANGES", "body": "x"}' > "$p2"
+check "refuses two events" "2" "$(pr7 "$p2")"
+printf '{"commit_id": "old", "event": "COMMENT", "body": "x"}' > "$p2"
+check "refuses a stale head" "2" "$(pr7 "$p2")"
+check "one bad payload stops them all" "2" "$(pr7 "$p" "$p2")"
+check "refuses no payload" "2" "$(pr7)"
+check "refuses a second review of the head" "2" "$(STUB_REVIEWS=https://x pr7 "$pb")"
 
 echo "# prior-review.sh"
 prior="$skills/ssak-review/scripts/prior-review.sh"
@@ -426,6 +444,10 @@ comment resolved outdated b c.ts:7 u/c2 | gone" "$(gh api rate_limit --jq "$data
   # In a variable first: bash 3.2 brace-expands {a, b} written inside "$(... "...")"
   data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {"reviews": {"nodes": []}, "reviewThreads": {"nodes": []}}}}}'
   check "prior review: nothing of mine" "none" "$(gh api rate_limit --jq "$data | $PRIOR_JQ")"
+  data='[{"filename": "a.ts", "patch": "@@ -1,3 +1,4 @@ f\n x\n+y\n@@ -20 +21 @@\n-a\n+b"},
+    {"filename": "b c.ts", "patch": "@@ -5,2 +4,0 @@\n-a\n-b"}, {"filename": "img.png"}]'
+  check "diff hunks: first and last new-file line" "$(printf 'a.ts\t1\t4\na.ts\t21\t21\nb c.ts\t4\t3')" \
+    "$(gh api rate_limit --jq "$data | $HUNKS_JQ")"
   # shellcheck source=skills/ssak-respond/scripts/common.sh
   . "$skills/ssak-respond/scripts/common.sh"
   data='{"data": {"viewer": {"login": "me"}, "repository": {"pullRequest": {

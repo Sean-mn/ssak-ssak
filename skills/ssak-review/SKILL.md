@@ -12,7 +12,7 @@ Arguments: `$ARGUMENTS`
 Paths below are relative to this skill's base directory (shown when the skill loads).
 - `scripts/pr-worktree.sh <pr#>`: checks out the PR head in a detached worktree and prints `<head sha> <worktree path>`, then `fork <yes|no> <author>`. `fork yes` means the head is in someone else's fork.
 - `scripts/prior-review.sh <pr#>`: prints what you already posted on the PR, read only: `none`, or `reviewed <sha> <review url>` for your last review and one `comment <open|resolved> <current|outdated> <path>:<line> <comment url> | <start of the comment>` line per review thread you started.
-- `scripts/post-review.sh <pr#> <payload.json>`: posts one review, the only way this skill writes to GitHub. Refuses (exit 2) a non-`COMMENT` event, a `commit_id` that is not the PR head, or a head you already reviewed. Exit 3 means GitHub rejected the payload.
+- `scripts/post-review.sh <pr#> <payload.json>...`: posts one review per payload, in order, the only way this skill writes to GitHub. Checks every payload before posting any, and refuses (exit 2) a non-`COMMENT` event, a `commit_id` that is not the PR head, a payload with more than one comment, a comment not on side `RIGHT` of a line in the PR diff, or a head you already reviewed. Exit 3 means GitHub rejected one; the ones before it stay posted.
 - `../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`: removes review worktrees.
 - `references/review-template.md`: severity levels and the chat report shown to the user, plus the reviewer brief and multi-PR report for two or more PRs.
 - `references/inline-template.md`: what gets posted to GitHub with `--comment`: the inline comment format and the review body.
@@ -102,20 +102,19 @@ If something looks wrong but no rule file or template covers it, do not report i
 Report to the user in chat using the "Chat report" format in `references/review-template.md`, in the user's language. Post nothing to GitHub.
 
 ### With `--comment`
-1. Build one review from `references/inline-template.md`: an "Inline comment" per finding, new findings only when you reviewed the PR before (see "Reviewing a PR again"). A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number.
-2. The review body follows "Review body" in the template:
+1. Post each finding as its own review, so each shows up and can be answered on its own. Write one "Inline comment" from `references/inline-template.md` per finding, new findings only when you reviewed the PR before (see "Reviewing a PR again"). A comment can only sit on a line in the PR diff; use `side: "RIGHT"` and the new file's line number.
+2. A body review follows "Review body" in the template, and only when there is a body:
    - With `--summary`: the full summary.
-   - Without it: empty, except findings that cannot be placed on a diff line, which always go in the body.
-3. Write the payload to a temp file and post it as a single review:
+   - Without it: only findings that cannot be placed on a diff line.
+3. Write one payload file per review, the findings in severity order and the body review last, then post them all in one call:
    ```
-   bash <skill dir>/scripts/post-review.sh <pr> <payload.json>
+   bash <skill dir>/scripts/post-review.sh <pr> <finding-1.json> <finding-2.json>... [<body.json>]
    ```
-   Payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "<body or empty>", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`. Leave `body` out when it is empty. It prints the review URL. On exit 2, tell the user why it refused and post nothing.
-4. If GitHub rejects the payload (exit 3, message on stderr):
-   - Some comment positions are invalid: move those comments into the body and run it again.
-   - A body is required: run it again with the one-line body from the template.
-5. If there are no findings, or none of them is new: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
-6. Tell the user in chat what was posted: the review URL, the count per severity, and the same "Chat report".
+   Finding payload: `{"commit_id": "<head sha>", "event": "COMMENT", "comments": [{"path": "...", "line": 12, "side": "RIGHT", "body": "..."}]}`. Body payload: `{"commit_id": "<head sha>", "event": "COMMENT", "body": "..."}`. It prints one review URL per payload.
+4. On exit 2 nothing was posted. If it names a line not in the PR diff, move that finding into the body payload and run it again. For any other refusal, tell the user why and post nothing.
+5. On exit 3 GitHub rejected one payload (message on stderr) and the ones before it are posted. Do not run it again: the head now has your review, so it would refuse. Tell the user which findings were posted and give them the rest in chat.
+6. If there are no findings, or none of them is new: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
+7. Tell the user in chat what was posted: the review URLs, the count per severity, and the same "Chat report".
 
 ## Two or more PRs: one reviewer per PR, then report together
 1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR; the runs may go in parallel. Keep each `<head sha> <worktree path>` and `fork` line.
@@ -127,7 +126,7 @@ Report to the user in chat using the "Chat report" format in `references/review-
 4. Remove all review worktrees in one call, as in step 3: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`. Fill in each chat report's Worktree line from its output.
 5. Deliver:
    - Without `--comment`: the "Multi-PR report" from `references/review-template.md`, then each PR's chat report.
-   - With `--comment`: post one review per PR as in step 4 "With `--comment`", from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then the "Multi-PR report" with each review URL, then each PR's chat report.
+   - With `--comment`: post each PR's findings as in step 4 "With `--comment`", one review per finding, from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then the "Multi-PR report" with each PR's review URLs, then each PR's chat report.
 
 ## Rules
 - When something is ambiguous or a choice is the user's (which PR, review depth, whether a finding is worth posting), ask the user as in `../../references/asking-the-user.md`: with options and a recommended one first, and decide alone only if the user said to go with your recommendation.

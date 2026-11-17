@@ -1,6 +1,6 @@
 # ssak-review inline template (--comment only)
 
-What gets posted to GitHub with `--comment`: one inline comment per finding, plus a review body only with `--summary`. Replace `<...>` with real values. Severity levels are defined in `review-template.md`.
+What gets posted to GitHub with `--comment`: each finding as its own review with one inline comment, plus a body review only with `--summary` or for findings that cannot sit on a diff line. Replace `<...>` with real values. Severity levels are defined in `review-template.md`.
 
 Write in the language of the PR description. In Korean, write in 해요체 (e.g. "통과해요", "추가하면 좋겠어요"), both in comments and the review body.
 
@@ -48,12 +48,7 @@ Example (Korean):
 
 ## Review body
 ### Without `--summary` (default)
-No body. Exception: findings that could not be placed on a diff line go in the body, each in the inline comment format starting with `path:line`.
-
-If GitHub rejects an empty body, use one line instead:
-```
-ssak-review (effort: <level>): <n> inline comment(s)
-```
+No body review. Exception: findings that could not be placed on a diff line go in one body review, each in the inline comment format starting with `path:line`.
 
 ### With `--summary`
 ```
