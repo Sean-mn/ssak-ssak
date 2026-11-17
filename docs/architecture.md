@@ -48,11 +48,11 @@ touch the main checkout.
 ## Flows
 
 **ssak-issue**, two or more issues: check dependencies ("blocked by" links, "depends on
-#N") → scout each issue → group coupled and dependent issues → one
-worker per group in parallel → a fresh verifier per issue → up to 2 reworks on FAIL →
+#N") → scout each issue → group coupled and dependent issues → plan per issue,
+user confirms → one worker per group in parallel → a fresh verifier per issue → up to 2 reworks on FAIL →
 remove worktrees, keep branches → with `--pr`, PR drafts, user confirms → `open-pr.sh`
 opens a draft PR per PASS issue → final report. With one issue the main agent does the
-work itself and still runs a verifier. With `--herdr`, workers run as Claude Code panes
+work itself, after the same plan and yes, and still runs a verifier. With `--herdr`, workers run as Claude Code panes
 in Herdr instead of subagents; verifiers stay subagents.
 
 **ssak-review**: `pr-worktree.sh` → for a PR from someone else's fork, ask before
