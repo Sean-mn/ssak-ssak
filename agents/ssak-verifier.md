@@ -46,6 +46,7 @@ If Docker is not running but condition 2 holds, run locally and add a NOTE: "rep
 
 ## Verdict
 - FAIL: a requirement is unmet, tests/build/lint fail, the change lacks a test or a new test does not match the project's test kinds (step 6), the change adds extra code you can show evidence for (step 7), or there is a bug or security problem you can show evidence for.
+- FAIL also for changes outside the issue's scope (unrelated formatting, refactors, dependency bumps), unless the issue or the brief asks for them. Name each file and hunk.
 - A failure that looks unrelated to this change is listed separately as "suspected pre-existing failure" with evidence. If you cannot tell, treat it as FAIL.
 - Style preferences and minor suggestions are NOTEs, not FAIL reasons. Extra code you suspect but cannot back with evidence is a NOTE.
 
