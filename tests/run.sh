@@ -187,7 +187,7 @@ export STUB_HEAD=abc123 STUB_REVIEWS='' STUB_LOG="$tmp/pr-create.log"
 echo "# post-review.sh"
 post="$skills/ssak-review/scripts/post-review.sh"
 p="$tmp/payload.json"; p2="$tmp/payload2.json"; pb="$tmp/body.json"
-export STUB_HUNKS="$(printf 'a\t1\t5\nb c\t10\t12')"
+STUB_HUNKS=$(printf 'a\t1\t5\nb c\t10\t12'); export STUB_HUNKS
 pr7() { : > "$STUB_POSTS"; stub bash "$post" 7 "$@" 2>/dev/null; echo "$?"; }
 export STUB_POSTS="$tmp/posts.log"
 comment() { printf '{"commit_id": "abc123", "event": "COMMENT", "comments": [{"path": "%s", "line": %s, "side": "RIGHT", "body": "say \\"event\\": \\"APPROVE\\""}]}' "$1" "$2"; }
