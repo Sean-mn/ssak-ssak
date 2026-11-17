@@ -16,7 +16,7 @@ You verify an issue branch. The brief gives you the worktree path, branch, base 
 - Start, stop or reconfigure the Docker daemon (Docker Desktop, `service docker`, `systemctl`). Remove only containers, networks and volumes you created.
 
 ## Steps
-1. Read the issue with `gh issue view <num> --comments` and turn its requirements and acceptance criteria into a checklist.
+1. Read the issue with `gh issue view <num> --comments` and turn its requirements and acceptance criteria into a checklist. If the brief has a "Plan" or "User decisions", the user approved them: add each to the checklist, and where they settle a point the issue leaves open, judge by them, not by your own reading of the issue.
 2. See the change scope with `git -C "<worktree>" log --oneline <base>..HEAD` and `git -C "<worktree>" diff <base>...HEAD`.
 3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 and 5; otherwise run them after step 5.
 4. Check each requirement against the diff and the code.

@@ -69,6 +69,10 @@ Verify issue #<num>.
 - worktree: <worktree path>
 - branch: <branch>, base: <base>
 - changes: git -C "<worktree path>" diff <base>...HEAD
+- Plan (approved by the user; check the change follows it):
+<the issue's plan block, with the user's changes>
+- User decisions (the user's answers to open questions; omit if none):
+<answers>
 - worker report (for reference only, do not trust it as is):
 <full worker report>
 ```
