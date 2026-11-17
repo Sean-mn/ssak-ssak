@@ -1,7 +1,7 @@
 ---
 name: ssak-issue
-description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --herdr, each worker runs as its own Claude Code pane in Herdr instead of a subagent. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue 12 15 --herdr medium", "/ssak-issue --find" or "work on issues 12 and 15".
-argument-hint: "<issue#> [issue#...] [--pr] [--herdr [model] [effort]] | --find"
+description: Work on GitHub issues by number, each in its own git worktree on a branch named by the repo's convention. One issue is handled directly by the main agent; two or more run in parallel with a worker agent each. A verifier agent checks every issue, then the main agent reports. With --herdr, each worker runs as its own Claude Code pane in Herdr instead of a subagent; with --headless, as a background `claude -p` session. With --find, lists open issues nobody has taken yet and lets the user pick. Use for "/ssak-issue 12 15", "/ssak-issue 12 15 --herdr medium", "/ssak-issue 12 15 --headless", "/ssak-issue --find" or "work on issues 12 and 15".
+argument-hint: "<issue#> [issue#...] [--pr] [--herdr [model] [effort] | --headless [model] [effort]] | --find"
 # for: Opus 5.5 / Sonnet 5.5 as the main agent; not checked on Haiku
 ---
 
@@ -22,6 +22,7 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 - `references/templates.md`: the plan shown before any work, agent briefs and the final report format.
 - `../ssak-clean-up/scripts/cleanup.sh remove --keep-branch issue-<num>...`: removes finished worktrees, keeps the branches.
 - `../../references/herdr.md`: how to lay out, start, prompt, watch and close Herdr panes, for `--herdr`.
+- `../../references/headless.md`: how to start, wait on and resume background `claude -p` workers, for `--headless`.
 - `../ssak-contrib/scripts/open-pr.sh <path> <push-remote> <branch> <owner/repo> <base-branch> <title> <body-file>`: pushes a branch and opens a draft PR, for `--pr`; when you already have an open PR from the branch, it pushes to it and prints its URL instead. Refuses (exit 2) a remote that is not `<owner/repo>` and the base or default branch, never force-pushes, prints the PR URL.
 
 ## Subagents
@@ -34,7 +35,8 @@ Paths below are relative to this skill's base directory (shown when the skill lo
 2. If the only argument is `--find`, go to "Find issues" below.
 3. If `--pr` is among the arguments, take it out first: PASS issues get draft PRs after the user approves (see "Open PRs").
 4. If `--herdr` is among the arguments, take it and the non-numeric words after it: `[model] [effort]`. A word that is an effort level (`low`, `medium`, `high`, `xhigh`, `max`) is the effort; a word before it, or a lone word that is not one, is the model. A given effort applies to every worker pane; without one, "Agent model and worker effort" picks it per group. Then do the checks in "Before anything" in `../../references/herdr.md`. With one issue `--herdr` changes nothing; say so in one line.
-5. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage `/ssak-issue <issue#> [issue#...] [--pr] [--herdr [model] [effort]] | --find`. Drop duplicate numbers.
+5. If `--headless` is among the arguments, take it and the words after it the same way as `--herdr`. `--herdr` and `--headless` together: stop and show the usage. Then do the checks in "Before anything" in `../../references/headless.md`. With one issue `--headless` changes nothing; say so in one line.
+6. Strip a leading `#` from each remaining argument (`#12` → `12`), then check that every one is a positive integer. If not, stop and show the usage `/ssak-issue <issue#> [issue#...] [--pr] [--herdr [model] [effort] | --headless [model] [effort]] | --find`. Drop duplicate numbers.
 
 ## Find issues (`--find`)
 1. Run `bash <skill dir>/scripts/find-issues.sh "$(gh repo view --json nameWithOwner -q .nameWithOwner)"`.
@@ -53,9 +55,9 @@ Name each issue's branch by the repo's own convention:
 Commit by the repo's own format too: a rule in the files above or a commitlint config, otherwise the pattern of `git log --oneline -20 <base>` (type and scope, a trailing `(#<num>)` or not). If no clear pattern shows up, use `<type>: <summary> (#<num>)`.
 
 ## Agent model and worker effort
-The worker, the verifier and every Herdr pane run on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. The scout runs on Sonnet 5.5, as "The scout" there says. Ask that question with the plan (see "Plan"), before the first worker or verifier starts.
+The worker, the verifier, every Herdr pane and every headless worker run on the model from `../../references/agent-model.md`: the session model, or Opus 5.5 when the session model is above Opus and the user did not pick it. The scout runs on Sonnet 5.5, as "The scout" there says. Ask that question with the plan (see "Plan"), before the first worker or verifier starts.
 
-With `--herdr` and no effort given, pick each group's effort from what you read:
+With `--herdr` or `--headless` and no effort given, pick each group's effort from what you read:
 
 | Work | Effort |
 |---|---|
@@ -65,7 +67,7 @@ With `--herdr` and no effort given, pick each group's effort from what you read:
 | Security or auth, migrations, concurrency, risk of data loss | `xhigh` |
 | A coupled group | the highest of its issues |
 | Fits no row, or the issue text is too vague to tell | ask the user |
-- The effort column applies only with `--herdr` and no effort given. Never pick `max`; only the user can.
+- The effort column applies only with `--herdr` or `--headless` and no effort given. Never pick `max`; only the user can.
 - "Ask the user": ask with the plan (see "Plan"), naming each such issue and why it was unclear.
 
 ## Dependencies
@@ -115,7 +117,7 @@ Copy this checklist into your reply and tick it as you go:
 - [ ] 1. Read issues, check dependencies, name branches, run make-worktrees.sh
 - [ ] 2. Scout issues that do not name their files
 - [ ] 3. Group coupled issues, show the plan, wait for yes
-- [ ] 4. Launch one worker per group (subagent or Herdr pane)
+- [ ] 4. Launch one worker per group (subagent, Herdr pane or headless session)
 - [ ] 5. Verify each DONE issue with a fresh verifier
 - [ ] 6. Rework each FAIL, at most 2 per issue; back to 5 after each
 - [ ] 7. Check overlaps, remove worktrees with cleanup.sh --keep-branch
@@ -125,8 +127,8 @@ Copy this checklist into your reply and tick it as you go:
 
 1. Read every issue with `gh issue view <num> --comments` and check its "Dependencies", pick each branch name (see "Branch names"), then run `bash <skill dir>/scripts/make-worktrees.sh <num>:<branch>...`. The first output line is `base <ref>`, followed by one `issue <num> <branch> <worktree path>` line per issue.
 2. For each issue whose text does not already name the files or functions it changes, launch an `ssak-scout` subagent (`../../agents/ssak-scout.md`) on Sonnet 5.5 (pass `sonnet` as the model; see "The scout" in `../../references/agent-model.md`) with the "Scout brief", all in parallel. Skip this step when every issue names them.
-3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` and no effort given, pick each group's effort (see "Agent model and worker effort"). Then show the plan with the coupled groups, the agent model (and each group's effort, with `--herdr`), and wait for the yes (see "Plan").
-4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead.
+3. Group coupled issues, using the dependencies and the scout maps: one depends on another (see "Dependencies"), needs another's change, or they would change the same files or functions. Separate workers on coupled issues design the same code twice and conflict on merge. Every other issue is a group of its own. With `--herdr` or `--headless` and no effort given, pick each group's effort (see "Agent model and worker effort"). Then show the plan with the coupled groups, the agent model (and each group's effort, with `--herdr` or `--headless`), and wait for the yes (see "Plan").
+4. Launch one `ssak-worker` subagent (`../../agents/ssak-worker.md`) per group, all in parallel. A single issue gets the "Worker brief" from `references/templates.md`; a coupled group gets the "Coupled worker brief", and that worker does its issues in order: each issue after the ones it depends on, otherwise by issue number. Include each issue's scout map when there is one. The script already created the worktrees, so do not use the subagent tool's workspace isolation option. With `--herdr`, see "Herdr workers" instead; with `--headless`, "Headless workers".
    - When a later issue needs an earlier one's change, its branch is stacked on the earlier branch, and from here on its `<base>` is the earlier branch.
 5. Handle each issue independently; never wait on another issue. A coupled worker reports once per issue.
    - If the worker reports `BLOCKED`, that issue ends there without verification.
@@ -157,6 +159,14 @@ Same steps as "Two or more issues", but each worker is a separate Claude Code se
 - Step 5, waiting: wait on each worker as in "Watching". On `idle`/`done`, the report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, read the pane, and if the worker is still mid-task wait again.
 - Step 6, rework: delete the old report file, then send the "Rework request" as a prompt, written first to `.claude/worktrees/ssak-issue-<num>.rework.md`, like the brief.
 - Step 7, before removing worktrees: close each pane this run started ("Closing"), since a session still sitting in a worktree keeps it from being removed. After the final report, delete every issue's brief, rework and report files, including issues that ended `BLOCKED` or `FAIL` and worktrees that `cleanup.sh` kept, as in "Handoff files".
+
+## Headless workers (`--headless`)
+Same steps as "Two or more issues", but each worker is a separate `claude -p` session running in the background, with no pane and no way to ask the user anything. Verifiers stay subagents. Read `../../references/headless.md` first. Only these steps change:
+- Step 3, plan: with the plan, say which permission mode the workers get (this session's, as in "Permissions" there), and when that mode can deny commands, that a worker may end `BLOCKED` on one.
+- Step 4, launch: for each group, write the "Headless worker brief" from `references/templates.md` to `.claude/worktrees/ssak-issue-<num>.brief.md`, then start it as in "Starting a worker", all in parallel. Model and effort are picked as in "Herdr workers".
+- Step 5, waiting: wait as in "Waiting". The report is `.claude/worktrees/ssak-issue-<num>.report.md`; if it is missing, the worker stopped early: read `.result` and `.permission_denials` of its output file and treat the issue as `BLOCKED` with that reason. When it stopped on a question, ask the user as in "Asking the user" and send the answer as in "Resuming".
+- Step 6, rework: delete the old report file, write the "Rework request" to `.claude/worktrees/ssak-issue-<num>.rework.md`, and send it as in "Resuming".
+- Step 7: after the final report, delete every issue's brief, rework, report and output files as in "Handoff files" there.
 
 ## Rules
 - Never settle an ambiguity or a user-owned choice on your own, and never let a worker do it, unless the user said to go with the AI's recommendation. See "Asking the user".

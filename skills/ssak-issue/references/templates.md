@@ -12,7 +12,7 @@ Write it in the user's language. One block per issue; for a coupled group, one b
 - **Change**: <files or functions, as `path` or `path:function`>
 - **How**: <the approach, one to three lines; the other option and why not, if there was one>
 - **Checks**: <tests to add or run, build, lint>
-- **Branch**: <branch> · **Group**: <alone / with #<num>: why> · **Effort**: <with --herdr; omit otherwise>
+- **Branch**: <branch> · **Group**: <alone / with #<num>: why> · **Effort**: <with --herdr or --headless; omit otherwise>
 ```
 Then ask whether to go ahead, with every open question and the agent model question in the same call.
 
@@ -60,6 +60,14 @@ Do each issue only in its own worktree, commit it there, then answer with one re
 ```
 You are the ssak-worker. Read <absolute path of ../../agents/ssak-worker.md> and follow it as your instructions.
 <the Worker brief or Coupled worker brief above, filled in>
+When done, write your report in that file's report format to <main repo>/.claude/worktrees/ssak-issue-<num>.report.md (one file per issue for a coupled group), then reply only "REPORTED". Write nothing else outside your worktree.
+```
+
+## Headless worker brief (file read by a `claude -p` session)
+```
+You are the ssak-worker. Read <absolute path of ../../agents/ssak-worker.md> and follow it as your instructions.
+<the Worker brief or Coupled worker brief above, filled in>
+Nobody can answer you during this run: when you need a decision, or a command is denied, stop and report BLOCKED with the question or the denied command.
 When done, write your report in that file's report format to <main repo>/.claude/worktrees/ssak-issue-<num>.report.md (one file per issue for a coupled group), then reply only "REPORTED". Write nothing else outside your worktree.
 ```
 
