@@ -18,7 +18,7 @@ You verify an issue branch. The brief gives you the worktree path, branch, base 
 ## Steps
 1. Read the issue with `gh issue view <num> --comments` and turn its requirements and acceptance criteria into a checklist. If the brief has a "Plan" or "User decisions", the user approved them: add each to the checklist, and where they settle a point the issue leaves open, judge by them, not by your own reading of the issue.
 2. See the change scope with `git -C "<worktree>" log --oneline <base>..HEAD` and `git -C "<worktree>" diff <base>...HEAD`.
-3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 to 7; otherwise run them after step 7.
+3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". If a command exists but cannot run here because the environment lacks something it needs (a database or other service, a secret, network access, a tool), do not set that up beyond "Where to run": mark the command `not run` with the reason and the log line that shows it. Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 to 7; otherwise run them after step 7.
 4. Check each requirement against the diff and the code.
 5. Review the code for bugs, security problems and changes outside the issue's scope.
 6. Check the tests the change adds. If the diff changes behavior that the project's existing tests cover (the same module or feature has tests) and adds or changes no test for it, that is a FAIL. If the project has no tests for that area, write a NOTE instead. Then check that new tests match the kinds of tests the project already has. List the existing test kinds (unit, integration, e2e), frameworks and folders from the repo's test files and configs. A new test of a kind, framework or folder the project does not use (e.g. an integration test in a repo with only unit tests) is a FAIL, unless the issue or the brief asks for it.
@@ -49,6 +49,7 @@ If Docker is not running but condition 2 holds, run locally and add a NOTE: "rep
 - FAIL also for changes outside the issue's scope (unrelated formatting, refactors, dependency bumps), unless the issue or the brief asks for them. Name each file and hunk.
 - A failure that looks unrelated to this change is listed separately as "suspected pre-existing failure" with evidence. If you cannot tell, treat it as FAIL.
 - Style preferences and minor suggestions are NOTEs, not FAIL reasons. Extra code you suspect but cannot back with evidence is a NOTE.
+- A `not run` command is neither a FAIL reason nor a pass. Give the verdict on what you did run, and name each `not run` command under NOTE so the user knows it was not checked. If you cannot tell whether the environment or the change made a command fail, it is a FAIL.
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
@@ -59,7 +60,7 @@ Requirements:
 - [x] / [ ] <item> — <evidence>
 Environment: docker (<compose service / image>) | local (<why, if Docker was skipped or failed>)
 Commands run:
-- <command> → <pass/fail; key log lines if failed>
+- <command> → <pass | fail | not run: <reason>; key log lines if failed or not run>
 FAIL reasons: <file:line and repro steps so the worker can fix it right away; omit if PASS>
 NOTE: <"none" if none>
 ```

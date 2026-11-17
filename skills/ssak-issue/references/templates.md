@@ -122,7 +122,7 @@ Closes #<num>
 | #<num> | ✅ PASS / ❌ FAIL / ⛔ BLOCKED | <branch> | <the model that did the work, e.g. opus> | <0-2> | <one line> |
 
 ### Needs attention
-- #<num>: <FAIL reason, BLOCKED reason, verifier NOTE, "suspected pre-existing failure" items>
+- #<num>: <FAIL reason, BLOCKED reason, verifier NOTE, "suspected pre-existing failure" items, commands the verifier marked `not run` and why>
 - Overlapping files: <files changed by more than one issue branch; may conflict on merge. "none" if none>
 - Stacked: <#<num> on #<num>: merge the earlier one first, or open its PR with --base <earlier branch>. "none" if none>
 
