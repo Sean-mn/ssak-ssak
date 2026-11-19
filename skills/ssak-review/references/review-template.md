@@ -1,6 +1,6 @@
 # ssak-review chat report template
 
-The report shown to the user in chat. Replace `<...>` with real values. Omit a severity section when it has no findings, and "Earlier review" when this is the first review. What gets posted to GitHub with `--comment` is in `inline-template.md`.
+The report shown to the user in chat. The verdict and counts come last, so the user sees them without scrolling up. Replace `<...>` with real values. Omit a severity section when it has no findings, and "Earlier review" when this is the first review. What gets posted to GitHub with `--comment` is in `inline-template.md`.
 
 ## Severity
 - 🔴 **Critical**: will break production or lose or expose data if merged. Must fix before merge.
@@ -12,15 +12,6 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 ```
 ## PR #<num> review: <title>
 <url> · effort: <level, or "high (raised from medium: <signal>)"> · base: <base> · head: <short sha>
-
-**Verdict**: <one line: e.g. "2 issues must be fixed before merge" / "No blocking issues">
-
-| Severity | Count |
-|---|---|
-| 🔴 Critical | <n> |
-| 🟠 High | <n> |
-| 🟡 Medium | <n> |
-| ⚪ Low | <n> |
 
 ### 🔴 Critical
 1. **<short title>** — `<path>:<line>`
@@ -51,6 +42,18 @@ Last reviewed at <short sha>: <review url>. The findings above are new since the
 
 ### Worktree
 <removed, or kept: reason. Remove it later with /ssak-clean-up review-<num>>
+
+### Summary
+**Verdict**: <one line: e.g. "2 issues must be fixed before merge" / "No blocking issues">
+
+| Severity | Count |
+|---|---|
+| 🔴 Critical | <n> |
+| 🟠 High | <n> |
+| 🟡 Medium | <n> |
+| ⚪ Low | <n> |
+
+<With --comment, filled in by the main agent after posting: "Posted: <review URLs>" or "Posted: nothing". Omit without --comment.>
 ```
 
 ## Reviewer brief (ssak-reviewer, two or more PRs)
@@ -66,7 +69,7 @@ Answer in your defined report format.
 ```
 
 ## Multi-PR report
-Shown first when two or more PRs were reviewed, followed by each PR's "Chat report" in PR number order. Leave out the Posted column without `--comment`.
+Shown last when two or more PRs were reviewed, after each PR's "Chat report" in PR number order. Leave out the Posted column without `--comment`.
 ```
 ## ssak-review: <n> PRs · effort: <level, or "auto" when none was given>
 
