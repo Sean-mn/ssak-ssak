@@ -114,7 +114,7 @@ Report to the user in chat using the "Chat report" format in `references/review-
 4. On exit 2 nothing was posted. If it names a line not in the PR diff, move that finding into the body payload and run it again. For any other refusal, tell the user why and post nothing.
 5. On exit 3 GitHub rejected one payload (message on stderr) and the ones before it are posted. Do not run it again: the head now has your review, so it would refuse. Tell the user which findings were posted and give them the rest in chat.
 6. If there are no findings, or none of them is new: with `--summary`, post the summary alone; without it, post nothing. Tell the user either way.
-7. Tell the user in chat what was posted: the review URLs, the count per severity, and the same "Chat report".
+7. Tell the user in chat what was posted with the same "Chat report"; its Summary at the end carries the review URLs and the count per severity.
 
 ## Two or more PRs: one reviewer per PR, then report together
 1. Run `bash <skill dir>/scripts/pr-worktree.sh <pr>` for each PR; the runs may go in parallel. Keep each `<head sha> <worktree path>` and `fork` line.
@@ -125,8 +125,8 @@ Report to the user in chat using the "Chat report" format in `references/review-
 3. At `xhigh`, as soon as a reviewer returns, launch one fresh `ssak-refuter` per Critical or High finding in its report, in parallel, with only the finding (file:line, claim, failure scenario), that PR's worktree path and its `run code: yes` or `no`. Do not wait for the other reviewers. Drop each `DISPROVED` finding from its PR's chat report, inline comments, counts and verdict. Reviewers cannot launch subagents, so the main agent does this.
 4. Remove all review worktrees in one call, as in step 3: `bash <skill dir>/../ssak-clean-up/scripts/cleanup.sh remove review-<pr>...`. Fill in each chat report's Worktree line from its output.
 5. Deliver:
-   - Without `--comment`: the "Multi-PR report" from `references/review-template.md`, then each PR's chat report.
-   - With `--comment`: post each PR's findings as in step 4 "With `--comment`", one review per finding, from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then the "Multi-PR report" with each PR's review URLs, then each PR's chat report.
+   - Without `--comment`: each PR's chat report, then the "Multi-PR report" from `references/review-template.md` last.
+   - With `--comment`: post each PR's findings as in step 4 "With `--comment`", one review per finding, from that PR's inline comments (`"on_diff": false` goes in the body) and head sha. Then each PR's chat report, then the "Multi-PR report" with each PR's review URLs last.
 
 ## Rules
 - When something is ambiguous or a choice is the user's (which PR, review depth, whether a finding is worth posting), ask the user as in `../../references/asking-the-user.md`: with options and a recommended one first, and decide alone only if the user said to go with your recommendation.
