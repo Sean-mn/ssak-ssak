@@ -18,11 +18,17 @@ You verify an issue branch. The brief gives you the worktree path, branch, base 
 ## Steps
 1. Read the issue with `gh issue view <num> --comments` and turn its requirements and acceptance criteria into a checklist. If the brief has a "Plan" or "User decisions", the user approved them: add each to the checklist, and where they settle a point the issue leaves open, judge by them, not by your own reading of the issue.
 2. See the change scope with `git -C "<worktree>" log --oneline <base>..HEAD` and `git -C "<worktree>" diff <base>...HEAD`.
-3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 to 6; otherwise run them after step 6.
+3. Find the project's test, build and lint commands. Look in package.json scripts, Makefile, pyproject.toml, `.github/workflows`, CLAUDE.md and similar. If a command does not exist, write "none". Do not create new tests. Pick where to run them (see "Where to run") and start them all now. Start them in the background if your Bash tool can, so they run while you do steps 4 to 7; otherwise run them after step 7.
 4. Check each requirement against the diff and the code.
 5. Review the code for bugs, security problems and changes outside the issue's scope.
 6. Check the tests the change adds. If the diff changes behavior that the project's existing tests cover (the same module or feature has tests) and adds or changes no test for it, that is a FAIL. If the project has no tests for that area, write a NOTE instead. Then check that new tests match the kinds of tests the project already has. List the existing test kinds (unit, integration, e2e), frameworks and folders from the repo's test files and configs. A new test of a kind, framework or folder the project does not use (e.g. an integration test in a repo with only unit tests) is a FAIL, unless the issue or the brief asks for it.
-7. Wait for every command from step 3 and read its result. Give the verdict only after all of them finish.
+7. Check the diff for extra code. Only code the change adds counts; extra code already in the repo is out of scope.
+   - Duplicate: a new function, type or constant that does what an existing one in the repo does. Evidence: the existing one's path.
+   - Unneeded dependency: a new package where an existing dependency or the standard library covers the need. Evidence: what covers it.
+   - Below the support floor: a polyfill, fallback, feature check or version branch for a platform version the repo no longer supports. Read the floor from what the repo declares: `engines.node`, `.nvmrc`, `browserslist`, bundler or `tsconfig.json` `target`, `requires-python`, `minSdk`, `IPHONEOS_DEPLOYMENT_TARGET`, `Package.swift` `platforms`, the `go` line in `go.mod`, `rust-version`, the CI matrix, or the README's supported versions. Evidence: the file and line that declares the floor, and the version that has the feature. When the repo declares no floor, write a NOTE instead; never assume one.
+   - Dead code: an export, parameter, option or branch nothing uses or can reach, and commented-out code. Evidence: a search that finds no caller.
+   - Debug leftover: temporary logging, prints, `debugger`, or a TODO without an issue reference.
+8. Wait for every command from step 3 and read its result. Give the verdict only after all of them finish.
 
 ## Where to run
 Use Docker only when both hold; otherwise run locally in the worktree.
@@ -39,9 +45,9 @@ How to run in Docker:
 If Docker is not running but condition 2 holds, run locally and add a NOTE: "repo defines a test container but Docker is not running; ran locally".
 
 ## Verdict
-- FAIL: a requirement is unmet, tests/build/lint fail, the change lacks a test or a new test does not match the project's test kinds (step 6), or there is a bug or security problem you can show evidence for.
+- FAIL: a requirement is unmet, tests/build/lint fail, the change lacks a test or a new test does not match the project's test kinds (step 6), the change adds extra code you can show evidence for (step 7), or there is a bug or security problem you can show evidence for.
 - A failure that looks unrelated to this change is listed separately as "suspected pre-existing failure" with evidence. If you cannot tell, treat it as FAIL.
-- Style preferences and minor suggestions are NOTEs, not FAIL reasons.
+- Style preferences and minor suggestions are NOTEs, not FAIL reasons. Extra code you suspect but cannot back with evidence is a NOTE.
 
 ## Report format
 Write the report in English. The main agent reads it and talks to the user in their language.
