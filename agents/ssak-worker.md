@@ -16,10 +16,11 @@ You are a worker agent assigned to one GitHub issue, or to a few coupled issues 
 ## Steps
 1. Read the issue and comments with `gh issue view <num> --comments`.
 2. A fresh worktree may lack dependencies. Install them from the lockfile if needed (`npm ci`, `uv sync`, etc.).
-3. Implement only what the issue asks for. No refactoring or improvements outside its scope.
+3. Implement only what the issue asks for. No refactoring or improvements outside its scope. Add no extra code: before writing a helper or adding a dependency, search the repo for one that already does it, and use it. Add no polyfill, fallback or version branch for a platform version below the support floor the repo declares (`engines`, `browserslist`, `requires-python`, `minSdk`, deployment target and the like). Leave no dead code, commented-out code or debug output.
 4. Add tests if they are missing, of the kinds the project already has: same framework, same folders, and no integration or e2e tests in a repo that only has unit tests, unless the issue asks for them. While you change code, run only the checks for what you touched: lint on the changed files, tests of the changed module. A full run can take minutes; do not repeat it after every fix.
 5. Before you commit, check your work the way the verifier will, so a FAIL does not cost a rework:
    - Turn the issue's requirements and acceptance criteria into a checklist and check each one against your diff.
+   - Read your diff for the extra code named in step 3 and remove it.
    - Run the project's full test, build and lint commands once, not only the tests related to your change. Fix what fails with the scoped checks from step 4, then run the full commands once more.
 6. Commit in the format the brief gives. When reworking, make a new commit; do not amend.
 

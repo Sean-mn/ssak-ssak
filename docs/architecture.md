@@ -23,7 +23,7 @@ Skills share scripts across folders: `ssak-contrib` uses `ssak-issue`'s
 | Agent | Used by | Model / effort | Writes files | Job |
 | --- | --- | --- | --- | --- |
 | `ssak-worker` | ssak-issue (2+ issues) | inherit / medium | yes, in its worktree | Implements one issue or a coupled group, commits, reworks on FAIL. |
-| `ssak-verifier` | ssak-issue, ssak-contrib | inherit / high | no | Checks requirements, runs test/build/lint, returns PASS or FAIL. |
+| `ssak-verifier` | ssak-issue, ssak-contrib | inherit / high | no | Checks requirements, runs test/build/lint, checks for extra code ([`references/lean-change.md`](../references/lean-change.md)), returns PASS or FAIL. |
 | `ssak-scout` | ssak-issue (2+ issues) | Sonnet 5.5, passed by the skill / medium | no | Maps an issue to the files and functions it would change, so coupled issues go to one worker. |
 | `ssak-reviewer` | ssak-review (2+ PRs) | inherit / session | no | Reviews one PR in its worktree and returns the report. Starts without CLAUDE.md. |
 | `ssak-refuter` | ssak-review at `xhigh` | inherit / medium | no | Tries to disprove one Critical or High finding. Starts without CLAUDE.md. |

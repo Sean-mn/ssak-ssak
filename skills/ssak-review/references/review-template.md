@@ -5,7 +5,7 @@ The report shown to the user in chat. Replace `<...>` with real values. Omit a s
 ## Severity
 - 🔴 **Critical**: will break production or lose or expose data if merged. Must fix before merge.
 - 🟠 **High**: likely bug, security weakness, or breaking change under realistic conditions. Should fix before merge.
-- 🟡 **Medium**: edge case bug, missing error handling, lint error, or team rule violation. Fix in this PR if cheap.
+- 🟡 **Medium**: edge case bug, missing error handling, lint error, team rule violation, or extra code the PR does not need (duplicate, unneeded dependency, compatibility code below the support floor, dead code). Fix in this PR if cheap.
 - ⚪ **Low**: minor issue or suggestion with a concrete benefit. Optional.
 
 ## Chat report
