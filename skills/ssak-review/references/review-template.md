@@ -5,13 +5,13 @@ The report shown to the user in chat. The verdict and counts come last, so the u
 ## Severity
 - 🔴 **Critical**: will break production or lose or expose data if merged. Must fix before merge.
 - 🟠 **High**: likely bug, security weakness, or breaking change under realistic conditions. Should fix before merge.
-- 🟡 **Medium**: edge case bug, missing error handling, lint error, team rule violation, or extra code the PR does not need (duplicate, unneeded dependency, compatibility code below the support floor, dead code). Fix in this PR if cheap.
+- 🟡 **Medium**: edge case bug, missing error handling, missing test for changed behavior, lint error, team rule violation, or extra code the PR does not need (duplicate, unneeded dependency, compatibility code below the support floor, dead code). Fix in this PR if cheap.
 - ⚪ **Low**: minor issue or suggestion with a concrete benefit. Optional.
 
 ## Chat report
 ```
 ## PR #<num> review: <title>
-<url> · effort: <level, or "high (raised from medium: <signal>)"> · base: <base> · head: <short sha>
+<url> · effort: <level> · base: <base> · head: <short sha>
 
 ### 🔴 Critical
 1. **<short title>** — `<path>:<line>`
@@ -34,6 +34,7 @@ Last reviewed at <short sha>: <review url>. The findings above are new since the
 - ⏳ still open: `<path>:<line>` <short title> (<comment url>)<", thread resolved" when its thread is resolved>
 
 ### Checks
+- Reviewed: <n>/<total> changed files<; not read: `<path>` (<generated / lockfile / vendored / binary>)>
 - Lint: <command> → <pass / n errors on changed lines, or "skipped: <reason>">
 - Build / type check: <command> → <result, "not run at this effort", or "skipped: <reason>">
 - Tests: <command> → <result, "not run at this effort", or "skipped: <reason>">
@@ -58,7 +59,7 @@ Last reviewed at <short sha>: <review url>. The findings above are new since the
 
 ## Reviewer brief (ssak-reviewer, two or more PRs)
 ```
-Review PR #<num> at effort <level, or "high (raised from medium: <signal>)">.
+Review PR #<num> at effort <level>.
 - worktree: <worktree path> at head <head sha>  (already checked out; do all reads and commands inside it)
 - skill dir: <ssak-review skill dir>
 - fork PR: <no / yes, by <author>>
@@ -71,11 +72,11 @@ Answer in your defined report format.
 ## Multi-PR report
 Shown last when two or more PRs were reviewed, after each PR's "Chat report" in PR number order. Leave out the Posted column without `--comment`.
 ```
-## ssak-review: <n> PRs · effort: <level, or "auto" when none was given>
+## ssak-review: <n> PRs · effort: <level>
 
-| PR | Effort | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
-|---|---|---|---|---|---|---|---|---|
-| #<num> <title> | <level, "high (raised: <signal>)" when raised> | <reviewer model, e.g. opus> | <one line> | <n> | <n> | <n> | <n> | <review URLs / nothing to post> |
+| PR | Model | Verdict | 🔴 | 🟠 | 🟡 | ⚪ | Posted |
+|---|---|---|---|---|---|---|---|
+| #<num> <title> | <reviewer model, e.g. opus> | <one line> | <n> | <n> | <n> | <n> | <review URLs / nothing to post> |
 
 <Not reviewed: #<num>: <reason>. Omit when every PR was reviewed.>
 ```
