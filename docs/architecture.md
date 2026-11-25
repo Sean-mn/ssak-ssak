@@ -54,7 +54,9 @@ remove worktrees, keep branches → with `--pr`, PR drafts, user confirms → `o
 opens a draft PR per PASS issue → final report. With one issue the main agent does the
 work itself, after the same plan and yes, and still runs a verifier. With `--herdr`, workers run as Claude Code panes
 in Herdr instead of subagents; with `--headless`, as background `claude -p` sessions that
-follow the calling session's permissions. Verifiers stay subagents either way.
+follow the calling session's permissions. Verifiers stay subagents either way. The
+worker (or the main agent with one issue) runs only the checks for what it touched; the
+project's full test, build and lint run once, in the verifier.
 
 **ssak-review**: `pr-worktree.sh` → for a PR from someone else's fork, ask before
 running its code (read only otherwise) → `prior-review.sh` for what was already posted →
