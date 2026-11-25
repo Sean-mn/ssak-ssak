@@ -68,6 +68,11 @@ In the report, say what you skipped and why.
 
 At every level, look in this order:
 1. **Production impact**: data loss or corruption, security (injection, auth bypass, secret exposure), outages and crashes, missing error handling on external calls, breaking changes to APIs, schemas, migrations, env vars or config, performance regressions on hot paths, concurrency and race conditions, irreversible operations without a guard.
+   - **Stale state**: a cache, projection or earlier decision the code keeps using after an input it depends on changes. Find what invalidates it.
+   - **Deploy order and rollback**: old and new versions run side by side during a deploy. A change that removes a permission, ACL, topic, table, column or stored data the old version still uses breaks it, and so does one that leaves no way back.
+   - **Contracts between services**: a field, flag or event the new consumer needs that the producer does not send, or the reverse.
+
+   These often show only outside the diff. Read the code the finding depends on (the producer or consumer, the deploy script, the invalidation path) and cite its `path:line`. At `low`, which reads the diff only, report them only when the diff alone shows them.
 2. **Correctness of the change**: does the code do what the PR and its linked issues from step 1.5 say, edge cases, regressions in touched behavior. A requirement of a linked issue that the change misses is a finding.
    - **Missing test**: behavior the PR adds or changes that no test covers, in a repo that has tests for that area. It is a Medium finding; the evidence is the search that finds no test for it. A change that cannot alter runtime behavior needs no test.
 3. **Lint and team rules**: lint errors on changed lines, violations of the rule files from step 1.4.
