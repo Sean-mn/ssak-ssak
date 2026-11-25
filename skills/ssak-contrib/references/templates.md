@@ -71,6 +71,6 @@ Then ask whether to push to the fork and open the draft PR.
 ## ssak-contrib result: <owner/repo>#<issue#>
 - PR: <draft PR url, or "not opened">
 - Branch: <me>:<branch> (clone: <path>)
-- Verification: <PASS / FAIL, reworks k>
+- Verification: <PASS / FAIL, reworks k; commands the verifier marked `not run` and why, or "all run">
 - You still need to: <sign CLA, mark the PR ready for review when satisfied, etc.>
 ```
