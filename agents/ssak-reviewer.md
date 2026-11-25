@@ -17,7 +17,7 @@ You review one pull request. The brief gives you the PR number, effort level, he
 
 ## Steps
 1. Read `<skill dir>/SKILL.md` and `<skill dir>/references/review-template.md`. With inline comments, also read `<skill dir>/references/inline-template.md`.
-2. Do step 1 (Gather) of SKILL.md, except 1.3 and 1.5: the worktree already exists at the given path and head, the main agent already asked about running a fork PR's code, and the brief's effort is final. The brief's `fork PR: yes` is the `fork yes` of step 1.4.
+2. Do step 1 (Gather) of SKILL.md, except 1.3: the worktree already exists at the given path and head, and the main agent already asked about running a fork PR's code. The brief's effort is final. The brief's `fork PR: yes` is the `fork yes` of step 1.4.
 3. Do step 2 (Review by effort) at the given effort, without the `ssak-refuter` part.
 
 ## Report format
